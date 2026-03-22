@@ -11,7 +11,7 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 
 use super::types::CameraError;
-use crate::usb_control::UsbControl;
+use crate::usb_stream::UsbStream;
 
 // ---------------------------------------------------------------------------
 // Lepton SDK module IDs (upper bytes of command ID)
@@ -110,7 +110,7 @@ fn command_to_control_id(command_id: u16) -> u8 {
 /// High-level Lepton camera controller.
 /// Thread-safe: all operations are serialized via internal mutex.
 pub struct LeptonController {
-    usb: Arc<UsbControl>,
+    usb: Arc<UsbStream>,
     lock: Mutex<()>,
 }
 
@@ -118,7 +118,7 @@ unsafe impl Send for LeptonController {}
 unsafe impl Sync for LeptonController {}
 
 impl LeptonController {
-    pub fn new(usb: Arc<UsbControl>) -> Self {
+    pub fn new(usb: Arc<UsbStream>) -> Self {
         Self {
             usb,
             lock: Mutex::new(()),
