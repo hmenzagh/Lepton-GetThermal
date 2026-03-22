@@ -23,11 +23,13 @@ export function SpotmeterOverlay({
       const rect = e.currentTarget.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
+      console.log(`[spotmeter] click at x=${x.toFixed(2)}, y=${y.toFixed(2)}`);
       setRoi({ x, y });
 
       const col = Math.round(x * canvasWidth);
       const row = Math.round(y * canvasHeight);
       const size = 2;
+      console.log(`[spotmeter] ROI: row=${row-size}-${row+size}, col=${col-size}-${col+size}`);
       onRoiChange(
         Math.max(0, row - size),
         Math.max(0, col - size),

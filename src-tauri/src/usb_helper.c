@@ -59,13 +59,10 @@ int thermal_usb_open(uint16_t vid, uint16_t pid) {
     (*plugIn)->Release(plugIn);
     if (hr != 0 || !dev) return -5;
 
-    /* Open the device */
-    kr = (*dev)->USBDeviceOpen(dev);
-    if (kr != KERN_SUCCESS) {
-        (*dev)->Release(dev);
-        return -6;
-    }
-
+    /* NOTE: We intentionally do NOT call USBDeviceOpen() here.
+     * USBDeviceOpen() takes exclusive access to the device, which blocks
+     * AVFoundation from receiving video frames. DeviceRequest() works
+     * without opening the device on macOS for control transfers. */
     g_device = dev;
     return 0;
 }
@@ -110,7 +107,7 @@ int thermal_usb_set_ctrl(uint8_t unit_id, uint8_t control_id,
 
 void thermal_usb_close(void) {
     if (g_device) {
-        (*g_device)->USBDeviceClose(g_device);
+        /* No USBDeviceClose needed since we never called USBDeviceOpen */
         (*g_device)->Release(g_device);
         g_device = NULL;
     }

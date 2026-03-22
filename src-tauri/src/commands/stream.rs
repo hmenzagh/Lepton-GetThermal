@@ -31,7 +31,7 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
     // Store camera first (it owns the capture session)
     *state.camera.lock() = Some(cam);
 
-    // USB control via nusb for Lepton commands (optional -- may fail if macOS blocks USB)
+    // USB control via IOKit for Lepton commands (optional — does not take exclusive access)
     let lepton = match crate::usb_control::UsbControl::connect() {
         Ok(usb) => {
             eprintln!("[thermal-v2] USB control connected for Lepton commands");

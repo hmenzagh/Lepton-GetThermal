@@ -247,14 +247,6 @@ impl AvCamera {
     /// Searches for an external UVC device whose `localizedName` contains
     /// "PureThermal" (case-insensitive comparison).
     pub fn discover() -> Result<Self, CameraError> {
-        // Check camera authorization
-        let media = unsafe { AVMediaTypeVideo }.expect("AVMediaTypeVideo unavailable");
-        let status: i64 = unsafe { msg_send![AVCaptureDevice::class(), authorizationStatusForMediaType: media] };
-        eprintln!("[thermal-v2] Camera authorization status: {} (0=NotDetermined, 1=Restricted, 2=Denied, 3=Authorized)", status);
-        if status != 3 {
-            eprintln!("[thermal-v2] WARNING: Camera not authorized! Grant access in System Settings > Privacy & Security > Camera");
-        }
-
         // Build a discovery session for external (USB/UVC) video devices.
         // SAFETY: These are well-known Apple framework extern statics, always valid on macOS.
         let device_type_external = unsafe { AVCaptureDeviceTypeExternal };
@@ -398,8 +390,7 @@ impl AvCamera {
         // Keep queue alive — AVFoundation needs it for the delegate callbacks.
         self.capture_queue = Some(queue);
 
-        // Start the session asynchronously to avoid blocking the Tauri command thread.
-        // startRunning() is a blocking call that may wait for device initialization.
+        // Start the session on a separate thread to avoid blocking the Tauri command thread.
         eprintln!("[thermal-v2] AVFoundation: starting capture session...");
         let session_ptr = Retained::as_ptr(&self.session) as usize;
         let format = self.format;
