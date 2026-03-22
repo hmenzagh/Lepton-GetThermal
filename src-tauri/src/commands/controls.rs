@@ -115,12 +115,16 @@ pub fn get_spot_temperature(state: State<'_, AppState>) -> Result<f64, String> {
         // Read spotmeter object (4 words: value, max, min, population)
         let words = l.get_attribute(0x0ED0, 4)?; // LEP_RAD_SPOTMETER_OBJ_KELVIN
         let spot_raw = words[0]; // first word is the spotmeter value
-        let celsius = if resolution == 0 {
-            // 0.1K resolution
-            (spot_raw as f64 - 2731.5) / 10.0
-        } else {
-            // 0.01K resolution
+        eprintln!("[thermal-v2] spot: resolution={resolution}, raw={spot_raw}, words={words:?}");
+
+        // Determine resolution: if raw value > 10000, it's clearly 0.01K encoding
+        // (at 0.1K, 10000 raw = 727°C which is unrealistic for normal use)
+        let celsius = if spot_raw > 10000 || resolution != 0 {
+            // 0.01K resolution: raw value is in centikelvins
             (spot_raw as f64 - 27315.0) / 100.0
+        } else {
+            // 0.1K resolution: raw value is in decikelvins
+            (spot_raw as f64 - 2731.5) / 10.0
         };
         Ok(celsius)
     })
