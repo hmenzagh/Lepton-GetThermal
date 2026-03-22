@@ -22,6 +22,8 @@ pub struct CameraAcquisition {
     current_palette: Arc<Mutex<Palette>>,
     frame_width: u32,
     frame_height: u32,
+    /// Raw pointer to heap-allocated CallbackData, freed on stop_stream.
+    callback_ptr: Option<*mut std::ffi::c_void>,
 }
 
 // Raw pointers are Send-safe in our usage (single-owner with mutex)
@@ -70,6 +72,7 @@ impl CameraAcquisition {
                 current_palette: Arc::new(Mutex::new(Palette::IronBlack)),
                 frame_width: 0,
                 frame_height: 0,
+                callback_ptr: None,
             })
         }
     }
@@ -139,6 +142,7 @@ impl CameraAcquisition {
                 )));
             }
 
+            self.callback_ptr = Some(user_ptr);
             self.streaming.store(true, Ordering::Relaxed);
             Ok(())
         }
@@ -150,6 +154,13 @@ impl CameraAcquisition {
                 uvc_stop_streaming(self.devh);
             }
             self.streaming.store(false, Ordering::Relaxed);
+            // Free the CallbackData that was leaked via Box::into_raw in start_stream.
+            // Safe because uvc_stop_streaming guarantees no more callbacks will fire.
+            if let Some(ptr) = self.callback_ptr.take() {
+                unsafe {
+                    let _ = Box::from_raw(ptr as *mut CallbackData);
+                }
+            }
         }
     }
 }

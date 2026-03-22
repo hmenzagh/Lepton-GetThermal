@@ -43,11 +43,19 @@ export function useCamera() {
   }, []);
 
   const setPalette = useCallback(async (palette: Palette) => {
-    await invoke("set_palette", { palette });
+    try {
+      await invoke("set_palette", { palette });
+    } catch (e) {
+      setError(String(e));
+    }
   }, []);
 
   const performFfc = useCallback(async () => {
-    await invoke("perform_ffc");
+    try {
+      await invoke("perform_ffc");
+    } catch (e) {
+      setError(String(e));
+    }
   }, []);
 
   const getAgcEnable = useCallback(async (): Promise<boolean> => {

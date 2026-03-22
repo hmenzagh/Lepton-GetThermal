@@ -25,3 +25,8 @@ export type ConnectionState =
   | "connected"
   | "streaming"
   | "error";
+
+// Default Lepton sensor dimensions
+export const DEFAULT_WIDTH = 160;
+export const DEFAULT_HEIGHT = 120;
+export const DEFAULT_FPS = 9;

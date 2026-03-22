@@ -23,10 +23,10 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
     let cam = CameraAcquisition::connect().map_err(|e| e.to_string())?;
     let lepton = std::sync::Arc::new(LeptonController::new(cam.device_handle()));
 
-    *state.lepton.lock() = Some(lepton.clone());
+    // Store camera (device handle owner) before lepton (which holds a raw pointer to it)
     *state.camera.lock() = Some(cam);
+    *state.lepton.lock() = Some(lepton.clone());
 
-    // Try to get device info
     let part = lepton.get_part_number().unwrap_or_default();
     Ok(part)
 }

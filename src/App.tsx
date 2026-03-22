@@ -5,7 +5,7 @@ import { TemperatureDisplay } from "./components/TemperatureDisplay";
 import { PaletteBar } from "./components/PaletteBar";
 import { SpotmeterOverlay } from "./components/SpotmeterOverlay";
 import { useCamera } from "./hooks/useCamera";
-import { Palette } from "./lib/types";
+import { Palette, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS } from "./lib/types";
 import "./App.css";
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
 
   const handleConnect = useCallback(async () => {
     await camera.connect();
-    await camera.startStream(160, 120, 9);
+    await camera.startStream(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS);
   }, [camera.connect, camera.startStream]);
 
   const handlePolarityChange = useCallback(
@@ -75,8 +75,8 @@ function App() {
           />
           {isStreaming && showRadiometry && (
             <SpotmeterOverlay
-              canvasWidth={160}
-              canvasHeight={120}
+              canvasWidth={DEFAULT_WIDTH}
+              canvasHeight={DEFAULT_HEIGHT}
               onRoiChange={handleRoiChange}
             />
           )}
