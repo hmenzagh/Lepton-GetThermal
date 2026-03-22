@@ -4,7 +4,6 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 
 use crate::camera::acquisition::CameraAcquisition;
-use crate::camera::lepton::LeptonController;
 use crate::processing::palettes::Palette;
 use crate::AppState;
 
@@ -20,15 +19,16 @@ struct FrameEvent {
 
 #[tauri::command]
 pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
-    let cam = CameraAcquisition::connect().map_err(|e| e.to_string())?;
-    let lepton = std::sync::Arc::new(LeptonController::new(cam.device_handle()));
+    eprintln!("[thermal-v2] Attempting to connect to PureThermal device...");
+    let cam = CameraAcquisition::connect().map_err(|e| {
+        eprintln!("[thermal-v2] Connection failed: {e}");
+        e.to_string()
+    })?;
+    eprintln!("[thermal-v2] Device opened successfully");
 
-    // Store camera (device handle owner) before lepton (which holds a raw pointer to it)
     *state.camera.lock() = Some(cam);
-    *state.lepton.lock() = Some(lepton.clone());
-
-    let part = lepton.get_part_number().unwrap_or_default();
-    Ok(part)
+    // Lepton connection deferred to Task 3+5
+    Ok(String::new())
 }
 
 #[tauri::command]

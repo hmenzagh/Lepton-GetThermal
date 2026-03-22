@@ -1,7 +1,8 @@
+mod avfoundation;
 mod camera;
 mod commands;
 mod processing;
-mod uvc_ffi;
+mod usb_control;
 
 use camera::acquisition::CameraAcquisition;
 use camera::lepton::LeptonController;

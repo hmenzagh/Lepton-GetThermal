@@ -7,10 +7,8 @@
 #![allow(dead_code)]
 
 use parking_lot::Mutex;
-use std::os::raw::c_int;
 
 use super::types::CameraError;
-use crate::uvc_ffi::*;
 
 // ---------------------------------------------------------------------------
 // Lepton SDK module IDs (upper bytes of command ID)
@@ -107,21 +105,17 @@ fn command_to_control_id(command_id: u16) -> u8 {
 // ---------------------------------------------------------------------------
 
 /// High-level Lepton camera controller.
-/// Thread-safe: all UVC calls are serialized via internal mutex.
+/// Thread-safe: all operations are serialized via internal mutex.
 pub struct LeptonController {
-    devh: *mut uvc_device_handle,
     lock: Mutex<()>,
 }
 
-// Safety: the device handle pointer is only dereferenced under the internal
-// mutex, ensuring single-threaded access to the UVC device.
 unsafe impl Send for LeptonController {}
 unsafe impl Sync for LeptonController {}
 
 impl LeptonController {
-    pub fn new(devh: *mut uvc_device_handle) -> Self {
+    pub fn new() -> Self {
         Self {
-            devh,
             lock: Mutex::new(()),
         }
     }
@@ -133,63 +127,15 @@ impl LeptonController {
     /// Read an attribute from the Lepton as a vector of u16 words.
     pub fn get_attribute(
         &self,
-        command_id: u16,
-        word_length: usize,
+        _command_id: u16,
+        _word_length: usize,
     ) -> Result<Vec<u16>, CameraError> {
-        let _guard = self.lock.lock();
-        let unit_id = command_to_unit_id(command_id)?;
-        let control_id = command_to_control_id(command_id);
-        let byte_length = word_length * 2;
-
-        let mut buf = vec![0u8; byte_length];
-        let ret = unsafe {
-            uvc_get_ctrl(
-                self.devh,
-                unit_id,
-                control_id,
-                buf.as_mut_ptr(),
-                byte_length as c_int,
-                UVC_GET_CUR,
-            )
-        };
-
-        if ret < 0 {
-            return Err(CameraError::LeptonError(format!(
-                "get_ctrl failed for cmd 0x{command_id:04X}: {ret}"
-            )));
-        }
-
-        let words: Vec<u16> = buf
-            .chunks(2)
-            .map(|c| u16::from_le_bytes([c[0], c[1]]))
-            .collect();
-        Ok(words)
+        todo!("Reimplemented in Task 3 with nusb")
     }
 
     /// Write an attribute to the Lepton as a slice of u16 words.
-    pub fn set_attribute(&self, command_id: u16, data: &[u16]) -> Result<(), CameraError> {
-        let _guard = self.lock.lock();
-        let unit_id = command_to_unit_id(command_id)?;
-        let control_id = command_to_control_id(command_id);
-
-        let mut buf: Vec<u8> = data.iter().flat_map(|w| w.to_le_bytes()).collect();
-
-        let ret = unsafe {
-            uvc_set_ctrl(
-                self.devh,
-                unit_id,
-                control_id,
-                buf.as_mut_ptr(),
-                buf.len() as c_int,
-            )
-        };
-
-        if ret < 0 {
-            return Err(CameraError::LeptonError(format!(
-                "set_ctrl failed for cmd 0x{command_id:04X}: {ret}"
-            )));
-        }
-        Ok(())
+    pub fn set_attribute(&self, _command_id: u16, _data: &[u16]) -> Result<(), CameraError> {
+        todo!("Reimplemented in Task 3 with nusb")
     }
 
     /// Convenience: read a single u16 attribute.

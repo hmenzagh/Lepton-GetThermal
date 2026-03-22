@@ -1,3 +1,0 @@
-[submodule "src-tauri/libuvc"]
-	path = src-tauri/libuvc
-	url = https://github.com/groupgets/libuvc

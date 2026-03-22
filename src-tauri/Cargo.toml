@@ -11,7 +11,6 @@ crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
-cmake = "0.1"
 
 [dependencies]
 tauri = { version = "2", features = [] }
@@ -21,3 +20,12 @@ serde_json = "1"
 base64 = "0.22"
 parking_lot = "0.12"
 thiserror = "2"
+nusb = "0.2"
+futures-lite = "2"
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSString", "NSArray", "NSError", "NSNotification"] }
+objc2-av-foundation = { version = "0.3", features = ["AVCaptureDevice", "AVCaptureSession", "AVCaptureInput", "AVCaptureOutput", "AVCaptureVideoDataOutput", "AVMediaFormat"] }
+objc2-core-media = { version = "0.3", features = ["CMSampleBuffer", "CMFormatDescription", "CMTime"] }
+objc2-core-video = { version = "0.3", features = ["CVPixelBuffer", "CVBuffer", "CVImageBuffer"] }
+block2 = "0.6"
+dispatch2 = "0.3"
