@@ -6,9 +6,12 @@
 
 #![allow(dead_code)]
 
+use std::sync::Arc;
+
 use parking_lot::Mutex;
 
 use super::types::CameraError;
+use crate::usb_control::UsbControl;
 
 // ---------------------------------------------------------------------------
 // Lepton SDK module IDs (upper bytes of command ID)
@@ -107,6 +110,7 @@ fn command_to_control_id(command_id: u16) -> u8 {
 /// High-level Lepton camera controller.
 /// Thread-safe: all operations are serialized via internal mutex.
 pub struct LeptonController {
+    usb: Arc<UsbControl>,
     lock: Mutex<()>,
 }
 
@@ -114,8 +118,9 @@ unsafe impl Send for LeptonController {}
 unsafe impl Sync for LeptonController {}
 
 impl LeptonController {
-    pub fn new() -> Self {
+    pub fn new(usb: Arc<UsbControl>) -> Self {
         Self {
+            usb,
             lock: Mutex::new(()),
         }
     }
@@ -127,15 +132,33 @@ impl LeptonController {
     /// Read an attribute from the Lepton as a vector of u16 words.
     pub fn get_attribute(
         &self,
-        _command_id: u16,
-        _word_length: usize,
+        command_id: u16,
+        word_length: usize,
     ) -> Result<Vec<u16>, CameraError> {
-        todo!("Reimplemented in Task 3 with nusb")
+        let _guard = self.lock.lock();
+        let unit_id = command_to_unit_id(command_id)?;
+        let control_id = command_to_control_id(command_id);
+        let byte_length = word_length * 2;
+
+        let mut buf = vec![0u8; byte_length];
+        self.usb.get_ctrl(unit_id, control_id, &mut buf)?;
+
+        let words: Vec<u16> = buf
+            .chunks(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        Ok(words)
     }
 
     /// Write an attribute to the Lepton as a slice of u16 words.
-    pub fn set_attribute(&self, _command_id: u16, _data: &[u16]) -> Result<(), CameraError> {
-        todo!("Reimplemented in Task 3 with nusb")
+    pub fn set_attribute(&self, command_id: u16, data: &[u16]) -> Result<(), CameraError> {
+        let _guard = self.lock.lock();
+        let unit_id = command_to_unit_id(command_id)?;
+        let control_id = command_to_control_id(command_id);
+
+        let buf: Vec<u8> = data.iter().flat_map(|w| w.to_le_bytes()).collect();
+        self.usb.set_ctrl(unit_id, control_id, &buf)?;
+        Ok(())
     }
 
     /// Convenience: read a single u16 attribute.
