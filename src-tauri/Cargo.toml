@@ -1,0 +1,23 @@
+[package]
+name = "thermal-v2"
+version = "0.1.0"
+description = "FLIR Lepton Thermal Camera Viewer"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "thermal_v2_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+cmake = "0.1"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+parking_lot = "0.12"
+thiserror = "2"
