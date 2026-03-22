@@ -1,15 +1,17 @@
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde::Serialize;
+use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
 
 use crate::camera::acquisition::CameraAcquisition;
+use crate::camera::lepton::LeptonController;
 use crate::processing::palettes::Palette;
+use crate::usb_stream::UsbStream;
 use crate::AppState;
 
 #[derive(Clone, Serialize)]
 struct FrameEvent {
-    /// Base64-encoded RGBA pixel data
     data: String,
     width: usize,
     height: usize,
@@ -19,50 +21,32 @@ struct FrameEvent {
 
 #[tauri::command]
 pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
-    eprintln!("[thermal-v2] Connecting via AVFoundation + nusb...");
+    eprintln!("[thermal-v2] Connecting via IOKit USB...");
 
-    // Video capture via AVFoundation
-    let cam = CameraAcquisition::connect().map_err(|e| {
-        eprintln!("[thermal-v2] AVFoundation connection failed: {e}");
+    let stream = Arc::new(UsbStream::open().map_err(|e| {
+        eprintln!("[thermal-v2] USB open failed: {e}");
         e.to_string()
-    })?;
-    eprintln!("[thermal-v2] AVFoundation camera discovered");
+    })?);
+    eprintln!("[thermal-v2] USB device opened");
 
-    // Store camera first (it owns the capture session)
+    let cam = CameraAcquisition::new(stream.clone());
     *state.camera.lock() = Some(cam);
 
-    // USB control via IOKit for Lepton commands (optional — does not take exclusive access)
-    let lepton = match crate::usb_control::UsbControl::connect() {
-        Ok(usb) => {
-            eprintln!("[thermal-v2] USB control connected for Lepton commands");
-            let lepton = std::sync::Arc::new(
-                crate::camera::lepton::LeptonController::new(std::sync::Arc::new(usb)),
-            );
-            Some(lepton)
-        }
-        Err(e) => {
-            eprintln!("[thermal-v2] USB control unavailable (Lepton commands disabled): {e}");
-            None
-        }
-    };
+    let lepton = Arc::new(LeptonController::new(stream));
+    let part = lepton.get_part_number().unwrap_or_default();
+    eprintln!("[thermal-v2] Lepton controller ready, part: {part}");
 
-    let part = lepton
-        .as_ref()
-        .and_then(|l| l.get_part_number().ok())
-        .unwrap_or_default();
-
-    *state.lepton.lock() = lepton;
+    *state.lepton.lock() = Some(lepton);
     Ok(part)
 }
 
 #[tauri::command]
 pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     eprintln!("[thermal-v2] start_stream called");
-    let mut cam_guard = state.camera.lock();
-    let cam = cam_guard.as_mut().ok_or("Camera not connected")?;
+    let cam_guard = state.camera.lock();
+    let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
 
     cam.start_stream(move |frame_result| {
-        eprintln!("[thermal-v2] Frame received: {}x{}, {} bytes RGBA", frame_result.width, frame_result.height, frame_result.rgba.len());
         let event = FrameEvent {
             data: BASE64.encode(&frame_result.rgba),
             width: frame_result.width,
@@ -77,8 +61,8 @@ pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), St
 
 #[tauri::command]
 pub fn stop_stream(state: State<'_, AppState>) -> Result<(), String> {
-    let mut cam_guard = state.camera.lock();
-    if let Some(cam) = cam_guard.as_mut() {
+    let cam_guard = state.camera.lock();
+    if let Some(cam) = cam_guard.as_ref() {
         cam.stop_stream();
     }
     Ok(())
