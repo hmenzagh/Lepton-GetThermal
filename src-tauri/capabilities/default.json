@@ -6,8 +6,8 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
-    "event:default",
-    "event:allow-listen",
-    "event:allow-emit"
+    "core:event:default",
+    "core:event:allow-listen",
+    "core:event:allow-emit"
   ]
 }
