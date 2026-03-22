@@ -1,1 +1,117 @@
-// Control commands - Task 7
+use tauri::State;
+
+use crate::camera::types::DeviceInfo;
+use crate::AppState;
+
+fn with_lepton<T>(
+    state: &State<'_, AppState>,
+    f: impl FnOnce(
+        &crate::camera::lepton::LeptonController,
+    ) -> Result<T, crate::camera::types::CameraError>,
+) -> Result<T, String> {
+    let guard = state.lepton.lock();
+    let lepton = guard.as_ref().ok_or("Camera not connected")?;
+    f(lepton).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn perform_ffc(state: State<'_, AppState>) -> Result<(), String> {
+    with_lepton(&state, |l| l.perform_ffc())
+}
+
+#[tauri::command]
+pub fn get_agc_enable(state: State<'_, AppState>) -> Result<bool, String> {
+    with_lepton(&state, |l| l.get_agc_enable())
+}
+
+#[tauri::command]
+pub fn set_agc_enable(state: State<'_, AppState>, enable: bool) -> Result<(), String> {
+    with_lepton(&state, |l| l.set_agc_enable(enable))
+}
+
+#[tauri::command]
+pub fn get_agc_policy(state: State<'_, AppState>) -> Result<u16, String> {
+    with_lepton(&state, |l| l.get_agc_policy())
+}
+
+#[tauri::command]
+pub fn set_agc_policy(state: State<'_, AppState>, policy: u16) -> Result<(), String> {
+    with_lepton(&state, |l| l.set_agc_policy(policy))
+}
+
+#[tauri::command]
+pub fn get_polarity(state: State<'_, AppState>) -> Result<u16, String> {
+    with_lepton(&state, |l| l.get_polarity())
+}
+
+#[tauri::command]
+pub fn set_polarity(state: State<'_, AppState>, polarity: u16) -> Result<(), String> {
+    with_lepton(&state, |l| l.set_polarity(polarity))
+}
+
+#[tauri::command]
+pub fn get_gain_mode(state: State<'_, AppState>) -> Result<u16, String> {
+    with_lepton(&state, |l| l.get_gain_mode())
+}
+
+#[tauri::command]
+pub fn set_gain_mode(state: State<'_, AppState>, mode: u16) -> Result<(), String> {
+    with_lepton(&state, |l| l.set_gain_mode(mode))
+}
+
+#[tauri::command]
+pub fn get_device_info(state: State<'_, AppState>) -> Result<DeviceInfo, String> {
+    with_lepton(&state, |l| {
+        let part = l.get_part_number()?;
+        let serial = l.get_serial_number()?;
+        let radiometry = l.supports_radiometry();
+
+        Ok(DeviceInfo {
+            serial_number: format!("{serial}"),
+            part_number: part,
+            firmware_version: String::new(), // TODO: read from OEM
+            supports_radiometry: radiometry,
+            supports_hw_pseudo_color: true,
+            width: 0,
+            height: 0,
+            fps: 0,
+        })
+    })
+}
+
+#[tauri::command]
+pub fn get_spotmeter_roi(state: State<'_, AppState>) -> Result<[u16; 4], String> {
+    with_lepton(&state, |l| l.get_spotmeter_roi())
+}
+
+#[tauri::command]
+pub fn set_spotmeter_roi(
+    state: State<'_, AppState>,
+    row_start: u16,
+    col_start: u16,
+    row_end: u16,
+    col_end: u16,
+) -> Result<(), String> {
+    with_lepton(&state, |l| {
+        l.set_spotmeter_roi([row_start, col_start, row_end, col_end])
+    })
+}
+
+/// Get spot temperature in Celsius from the radiometry spotmeter.
+#[tauri::command]
+pub fn get_spot_temperature(state: State<'_, AppState>) -> Result<f64, String> {
+    with_lepton(&state, |l| {
+        let resolution = l.get_tlinear_resolution()?;
+        // Read spotmeter object (4 words: value, max, min, population)
+        let words = l.get_attribute(0x0ED0, 4)?; // LEP_RAD_SPOTMETER_OBJ_KELVIN
+        let spot_raw = words[0]; // first word is the spotmeter value
+        let celsius = if resolution == 0 {
+            // 0.1K resolution
+            (spot_raw as f64 - 2731.5) / 10.0
+        } else {
+            // 0.01K resolution
+            (spot_raw as f64 - 27315.0) / 100.0
+        };
+        Ok(celsius)
+    })
+}
