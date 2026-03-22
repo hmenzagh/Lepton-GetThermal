@@ -2,6 +2,7 @@ mod avfoundation;
 mod camera;
 mod commands;
 mod processing;
+mod uvc_descriptors;
 mod usb_control;
 
 use camera::acquisition::CameraAcquisition;
