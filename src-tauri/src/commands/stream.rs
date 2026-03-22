@@ -57,10 +57,12 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
 
 #[tauri::command]
 pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    eprintln!("[thermal-v2] start_stream called");
     let mut cam_guard = state.camera.lock();
     let cam = cam_guard.as_mut().ok_or("Camera not connected")?;
 
     cam.start_stream(move |frame_result| {
+        eprintln!("[thermal-v2] Frame received: {}x{}, {} bytes RGBA", frame_result.width, frame_result.height, frame_result.rgba.len());
         let event = FrameEvent {
             data: BASE64.encode(&frame_result.rgba),
             width: frame_result.width,

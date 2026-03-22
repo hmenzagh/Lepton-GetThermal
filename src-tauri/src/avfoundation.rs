@@ -15,9 +15,9 @@ use objc2::runtime::{AnyObject, NSObject, ProtocolObject};
 use objc2::{define_class, msg_send, ClassType, DefinedClass};
 
 use objc2_av_foundation::{
-    AVCaptureDevice, AVCaptureDeviceDiscoverySession, AVCaptureDeviceInput,
-    AVCaptureDevicePosition, AVCaptureDeviceTypeExternal, AVCaptureOutput,
-    AVCaptureSession, AVCaptureVideoDataOutput,
+    AVCaptureDevice, AVCaptureDeviceDiscoverySession,
+    AVCaptureDeviceInput, AVCaptureDevicePosition, AVCaptureDeviceTypeExternal,
+    AVCaptureOutput, AVCaptureSession, AVCaptureVideoDataOutput,
     AVCaptureVideoDataOutputSampleBufferDelegate, AVMediaTypeVideo,
 };
 use objc2_core_media::CMSampleBuffer;
@@ -145,6 +145,8 @@ define_class!(
                 CapturedFormat::BGRA => 4,
             };
 
+            eprintln!("[thermal-v2] AVF delegate: frame {}x{}, format={:?}, base_null={}, bpr={}", width, height, format, base.is_null(), bytes_per_row);
+
             if !base.is_null() && width > 0 && height > 0 {
                 // Copy pixel data row-by-row (bytes_per_row may include padding).
                 let row_data_len = width * bytes_per_pixel;
@@ -226,6 +228,8 @@ pub struct AvCamera {
     output: Retained<AVCaptureVideoDataOutput>,
     delegate: Retained<FrameDelegate>,
     callback_holder: Arc<FrameCallbackHolder>,
+    /// Dispatch queue for frame delivery — must be kept alive while streaming.
+    capture_queue: Option<dispatch2::DispatchRetained<DispatchQueue>>,
     format: CapturedFormat,
     width: usize,
     height: usize,
@@ -243,6 +247,14 @@ impl AvCamera {
     /// Searches for an external UVC device whose `localizedName` contains
     /// "PureThermal" (case-insensitive comparison).
     pub fn discover() -> Result<Self, CameraError> {
+        // Check camera authorization
+        let media = unsafe { AVMediaTypeVideo }.expect("AVMediaTypeVideo unavailable");
+        let status: i64 = unsafe { msg_send![AVCaptureDevice::class(), authorizationStatusForMediaType: media] };
+        eprintln!("[thermal-v2] Camera authorization status: {} (0=NotDetermined, 1=Restricted, 2=Denied, 3=Authorized)", status);
+        if status != 3 {
+            eprintln!("[thermal-v2] WARNING: Camera not authorized! Grant access in System Settings > Privacy & Security > Camera");
+        }
+
         // Build a discovery session for external (USB/UVC) video devices.
         // SAFETY: These are well-known Apple framework extern statics, always valid on macOS.
         let device_type_external = unsafe { AVCaptureDeviceTypeExternal };
@@ -344,6 +356,7 @@ impl AvCamera {
             output,
             delegate,
             callback_holder,
+            capture_queue: None,
             format: captured_format,
             width,
             height,
@@ -369,7 +382,6 @@ impl AvCamera {
         }
 
         // Create a serial dispatch queue for frame delivery.
-        // DispatchQueueAttr::SERIAL is None (serial is the default).
         let queue = DispatchQueue::new(
             "com.thermal.avfoundation.capture",
             dispatch2::DispatchQueueAttr::SERIAL,
@@ -383,8 +395,21 @@ impl AvCamera {
             );
         }
 
-        // Start the session.
-        unsafe { self.session.startRunning() };
+        // Keep queue alive — AVFoundation needs it for the delegate callbacks.
+        self.capture_queue = Some(queue);
+
+        // Start the session asynchronously to avoid blocking the Tauri command thread.
+        // startRunning() is a blocking call that may wait for device initialization.
+        eprintln!("[thermal-v2] AVFoundation: starting capture session...");
+        let session_ptr = Retained::as_ptr(&self.session) as usize;
+        let format = self.format;
+        let w = self.width;
+        let h = self.height;
+        std::thread::spawn(move || {
+            let session = session_ptr as *const AVCaptureSession;
+            unsafe { (*session).startRunning() };
+            eprintln!("[thermal-v2] AVFoundation: session started, format={:?}, {}x{}", format, w, h);
+        });
 
         self.running = true;
         Ok(())
@@ -402,6 +427,9 @@ impl AvCamera {
         unsafe {
             self.output.setSampleBufferDelegate_queue(None, None);
         }
+
+        // Release the dispatch queue.
+        self.capture_queue = None;
 
         // Clear the callback.
         {

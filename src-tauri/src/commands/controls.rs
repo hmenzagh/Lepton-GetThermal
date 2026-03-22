@@ -3,65 +3,75 @@ use tauri::State;
 use crate::camera::types::DeviceInfo;
 use crate::AppState;
 
-fn with_lepton<T>(
+fn with_lepton<T: std::fmt::Debug>(
     state: &State<'_, AppState>,
+    cmd_name: &str,
     f: impl FnOnce(
         &crate::camera::lepton::LeptonController,
     ) -> Result<T, crate::camera::types::CameraError>,
 ) -> Result<T, String> {
     let guard = state.lepton.lock();
     let lepton = guard.as_ref().ok_or("Camera not connected")?;
-    f(lepton).map_err(|e| e.to_string())
+    match f(lepton) {
+        Ok(val) => {
+            eprintln!("[thermal-v2] {cmd_name}: OK ({val:?})");
+            Ok(val)
+        }
+        Err(e) => {
+            eprintln!("[thermal-v2] {cmd_name}: ERROR: {e}");
+            Err(e.to_string())
+        }
+    }
 }
 
 #[tauri::command]
 pub fn perform_ffc(state: State<'_, AppState>) -> Result<(), String> {
-    with_lepton(&state, |l| l.perform_ffc())
+    with_lepton(&state, "perform_ffc", |l| l.perform_ffc())
 }
 
 #[tauri::command]
 pub fn get_agc_enable(state: State<'_, AppState>) -> Result<bool, String> {
-    with_lepton(&state, |l| l.get_agc_enable())
+    with_lepton(&state, "get_agc_enable", |l| l.get_agc_enable())
 }
 
 #[tauri::command]
 pub fn set_agc_enable(state: State<'_, AppState>, enable: bool) -> Result<(), String> {
-    with_lepton(&state, |l| l.set_agc_enable(enable))
+    with_lepton(&state, "set_agc_enable", |l| l.set_agc_enable(enable))
 }
 
 #[tauri::command]
 pub fn get_agc_policy(state: State<'_, AppState>) -> Result<u16, String> {
-    with_lepton(&state, |l| l.get_agc_policy())
+    with_lepton(&state, "get_agc_policy", |l| l.get_agc_policy())
 }
 
 #[tauri::command]
 pub fn set_agc_policy(state: State<'_, AppState>, policy: u16) -> Result<(), String> {
-    with_lepton(&state, |l| l.set_agc_policy(policy))
+    with_lepton(&state, "set_agc_policy", |l| l.set_agc_policy(policy))
 }
 
 #[tauri::command]
 pub fn get_polarity(state: State<'_, AppState>) -> Result<u16, String> {
-    with_lepton(&state, |l| l.get_polarity())
+    with_lepton(&state, "get_polarity", |l| l.get_polarity())
 }
 
 #[tauri::command]
 pub fn set_polarity(state: State<'_, AppState>, polarity: u16) -> Result<(), String> {
-    with_lepton(&state, |l| l.set_polarity(polarity))
+    with_lepton(&state, "set_polarity", |l| l.set_polarity(polarity))
 }
 
 #[tauri::command]
 pub fn get_gain_mode(state: State<'_, AppState>) -> Result<u16, String> {
-    with_lepton(&state, |l| l.get_gain_mode())
+    with_lepton(&state, "get_gain_mode", |l| l.get_gain_mode())
 }
 
 #[tauri::command]
 pub fn set_gain_mode(state: State<'_, AppState>, mode: u16) -> Result<(), String> {
-    with_lepton(&state, |l| l.set_gain_mode(mode))
+    with_lepton(&state, "set_gain_mode", |l| l.set_gain_mode(mode))
 }
 
 #[tauri::command]
 pub fn get_device_info(state: State<'_, AppState>) -> Result<DeviceInfo, String> {
-    with_lepton(&state, |l| {
+    with_lepton(&state, "get_device_info", |l| {
         let part = l.get_part_number()?;
         let serial = l.get_serial_number()?;
         let radiometry = l.supports_radiometry();
@@ -81,7 +91,7 @@ pub fn get_device_info(state: State<'_, AppState>) -> Result<DeviceInfo, String>
 
 #[tauri::command]
 pub fn get_spotmeter_roi(state: State<'_, AppState>) -> Result<[u16; 4], String> {
-    with_lepton(&state, |l| l.get_spotmeter_roi())
+    with_lepton(&state, "get_spotmeter_roi", |l| l.get_spotmeter_roi())
 }
 
 #[tauri::command]
@@ -92,7 +102,7 @@ pub fn set_spotmeter_roi(
     row_end: u16,
     col_end: u16,
 ) -> Result<(), String> {
-    with_lepton(&state, |l| {
+    with_lepton(&state, "set_spotmeter_roi", |l| {
         l.set_spotmeter_roi([row_start, col_start, row_end, col_end])
     })
 }
@@ -100,7 +110,7 @@ pub fn set_spotmeter_roi(
 /// Get spot temperature in Celsius from the radiometry spotmeter.
 #[tauri::command]
 pub fn get_spot_temperature(state: State<'_, AppState>) -> Result<f64, String> {
-    with_lepton(&state, |l| {
+    with_lepton(&state, "get_spot_temperature", |l| {
         let resolution = l.get_tlinear_resolution()?;
         // Read spotmeter object (4 words: value, max, min, population)
         let words = l.get_attribute(0x0ED0, 4)?; // LEP_RAD_SPOTMETER_OBJ_KELVIN
