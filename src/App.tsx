@@ -5,7 +5,7 @@ import { TemperatureDisplay } from "./components/TemperatureDisplay";
 import { PaletteBar } from "./components/PaletteBar";
 import { SpotmeterOverlay } from "./components/SpotmeterOverlay";
 import { useCamera } from "./hooks/useCamera";
-import { Palette, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS } from "./lib/types";
+import { Palette, DEFAULT_WIDTH, DEFAULT_HEIGHT } from "./lib/types";
 import "./App.css";
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
 
   const handleConnect = useCallback(async () => {
     await camera.connect();
-    await camera.startStream(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS);
+    await camera.startStream();
   }, [camera.connect, camera.startStream]);
 
   const handlePolarityChange = useCallback(

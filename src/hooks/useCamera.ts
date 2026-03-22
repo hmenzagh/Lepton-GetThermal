@@ -21,17 +21,14 @@ export function useCamera() {
     }
   }, []);
 
-  const startStream = useCallback(
-    async (width = 160, height = 120, fps = 9) => {
-      try {
-        await invoke("start_stream", { width, height, fps });
-        setState("streaming");
-      } catch (e) {
-        setError(String(e));
-      }
-    },
-    []
-  );
+  const startStream = useCallback(async () => {
+    try {
+      await invoke("start_stream");
+      setState("streaming");
+    } catch (e) {
+      setError(String(e));
+    }
+  }, []);
 
   const stopStream = useCallback(async () => {
     try {

@@ -19,30 +19,48 @@ struct FrameEvent {
 
 #[tauri::command]
 pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
-    eprintln!("[thermal-v2] Attempting to connect to PureThermal device...");
+    eprintln!("[thermal-v2] Connecting via AVFoundation + nusb...");
+
+    // Video capture via AVFoundation
     let cam = CameraAcquisition::connect().map_err(|e| {
-        eprintln!("[thermal-v2] Connection failed: {e}");
+        eprintln!("[thermal-v2] AVFoundation connection failed: {e}");
         e.to_string()
     })?;
-    eprintln!("[thermal-v2] Device opened successfully");
+    eprintln!("[thermal-v2] AVFoundation camera discovered");
 
+    // Store camera first (it owns the capture session)
     *state.camera.lock() = Some(cam);
-    // Lepton connection deferred to Task 3+5
-    Ok(String::new())
+
+    // USB control via nusb for Lepton commands (optional -- may fail if macOS blocks USB)
+    let lepton = match crate::usb_control::UsbControl::connect() {
+        Ok(usb) => {
+            eprintln!("[thermal-v2] USB control connected for Lepton commands");
+            let lepton = std::sync::Arc::new(
+                crate::camera::lepton::LeptonController::new(std::sync::Arc::new(usb)),
+            );
+            Some(lepton)
+        }
+        Err(e) => {
+            eprintln!("[thermal-v2] USB control unavailable (Lepton commands disabled): {e}");
+            None
+        }
+    };
+
+    let part = lepton
+        .as_ref()
+        .and_then(|l| l.get_part_number().ok())
+        .unwrap_or_default();
+
+    *state.lepton.lock() = lepton;
+    Ok(part)
 }
 
 #[tauri::command]
-pub fn start_stream(
-    app: AppHandle,
-    state: State<'_, AppState>,
-    width: i32,
-    height: i32,
-    fps: i32,
-) -> Result<(), String> {
+pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     let mut cam_guard = state.camera.lock();
     let cam = cam_guard.as_mut().ok_or("Camera not connected")?;
 
-    cam.start_stream(width, height, fps, move |frame_result| {
+    cam.start_stream(move |frame_result| {
         let event = FrameEvent {
             data: BASE64.encode(&frame_result.rgba),
             width: frame_result.width,
