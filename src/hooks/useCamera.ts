@@ -85,12 +85,16 @@ export function useCamera() {
 
   const setSpotmeterRoi = useCallback(
     async (rowStart: number, colStart: number, rowEnd: number, colEnd: number) => {
-      await invoke("set_spotmeter_roi", {
-        row_start: rowStart,
-        col_start: colStart,
-        row_end: rowEnd,
-        col_end: colEnd,
-      });
+      try {
+        await invoke("set_spotmeter_roi", {
+          rowStart: Math.round(rowStart),
+          colStart: Math.round(colStart),
+          rowEnd: Math.round(rowEnd),
+          colEnd: Math.round(colEnd),
+        });
+      } catch (e) {
+        setError(`ROI error: ${String(e)}`);
+      }
     },
     []
   );

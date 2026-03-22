@@ -39,7 +39,6 @@ function App() {
 
   const handleRoiChange = useCallback(
     (r1: number, c1: number, r2: number, c2: number) => {
-      console.log(`[App] setSpotmeterRoi(${r1}, ${c1}, ${r2}, ${c2})`);
       camera.setSpotmeterRoi(r1, c1, r2, c2);
     },
     [camera.setSpotmeterRoi]
