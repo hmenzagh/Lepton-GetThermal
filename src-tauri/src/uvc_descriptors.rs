@@ -1,8 +1,8 @@
-/// UVC descriptor parsing for Y16 (16-bit greyscale) video format detection.
-///
-/// Parses raw USB configuration descriptors to locate the Video Streaming
-/// interface, Y16 uncompressed format, frame dimensions, and isochronous
-/// endpoint needed to set up bulk/isochronous USB transfers.
+//! UVC descriptor parsing for Y16 (16-bit greyscale) video format detection.
+//!
+//! Parses raw USB configuration descriptors to locate the Video Streaming
+//! interface, Y16 uncompressed format, frame dimensions, and isochronous
+//! endpoint needed to set up bulk/isochronous USB transfers.
 
 /// GUID for Y16 (16-bit greyscale) pixel format.
 /// Matches the USB Video Class "Y16 " format GUID.
@@ -143,7 +143,8 @@ pub fn parse_uvc_config(descriptor: &[u8]) -> Result<UvcStreamConfig, String> {
                     _ => {}
                 }
             }
-            DESC_ENDPOINT if in_vs_interface && current_alt_setting > 0 && b_length >= 7 => {
+            DESC_ENDPOINT if in_vs_interface && current_alt_setting > 0 && b_length >= 7
+                && vs_interface_num.map_or(false, |n| n == current_iface_num) => {
                 let ep_addr = descriptor[pos + 2];
                 let bm_attributes = descriptor[pos + 3];
 
