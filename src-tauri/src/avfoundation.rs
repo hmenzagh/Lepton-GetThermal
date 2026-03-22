@@ -38,6 +38,7 @@ use crate::camera::types::CameraError;
 
 /// Pixel format received from AVFoundation.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum CapturedFormat {
     /// Raw 16-bit grayscale (ideal for radiometry).
     Y16,
@@ -50,6 +51,8 @@ pub struct CapturedFrame {
     pub data: Vec<u8>,
     pub width: usize,
     pub height: usize,
+    /// The pixel format of this frame (Y16 or BGRA).
+    #[allow(dead_code)]
     pub format: CapturedFormat,
 }
 
@@ -63,6 +66,7 @@ pub struct CapturedFrame {
 /// The inner `parking_lot::Mutex` is used because the delegate callback fires
 /// on a dispatch queue (different thread from the main/Tauri thread).
 struct FrameCallbackHolder {
+    #[allow(clippy::type_complexity)]
     callback: parking_lot::Mutex<Option<Box<dyn Fn(CapturedFrame) + Send>>>,
 }
 
@@ -215,6 +219,8 @@ extern "C-unwind" {
 /// cam.stop();
 /// ```
 pub struct AvCamera {
+    /// Retained to keep the device alive for the capture session.
+    #[allow(dead_code)]
     device: Retained<AVCaptureDevice>,
     session: Retained<AVCaptureSession>,
     output: Retained<AVCaptureVideoDataOutput>,
@@ -422,11 +428,13 @@ impl AvCamera {
     }
 
     /// Whether the capture session is currently running.
+    #[allow(dead_code)]
     pub fn is_running(&self) -> bool {
         self.running
     }
 
     /// The underlying device name.
+    #[allow(dead_code)]
     pub fn device_name(&self) -> String {
         unsafe { self.device.localizedName() }.to_string()
     }

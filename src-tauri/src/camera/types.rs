@@ -1,19 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-/// PureThermal USB Vendor/Product IDs
-pub const PT_VID: u16 = 0x1e4e;
-pub const PT_PID: u16 = 0x0100;
-
-/// UVC frame format identifiers (matches libuvc enum)
-#[repr(u32)]
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[allow(dead_code)]
-pub enum UvcFrameFormat {
-    Y16 = 13,   // UVC_FRAME_FORMAT_Y16
-    Rgb = 7,    // UVC_FRAME_FORMAT_RGB
-    Gray8 = 11, // UVC_FRAME_FORMAT_GRAY8
-}
-
 /// Camera device information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(dead_code)]
