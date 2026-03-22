@@ -1,6 +1,6 @@
-/// Auto-gain processing for 16-bit thermal frames.
-/// Normalizes Y16 (16-bit unsigned) pixel values to 8-bit (0-255)
-/// using linear contrast stretching based on frame min/max.
+//! Auto-gain processing for 16-bit thermal frames.
+//! Normalizes Y16 (16-bit unsigned) pixel values to 8-bit (0-255)
+//! using linear contrast stretching based on frame min/max.
 
 /// Result of auto-gain processing, including metadata.
 #[derive(Debug, Clone)]

@@ -2,7 +2,7 @@
 name = "thermal-v2"
 version = "0.1.0"
 description = "FLIR Lepton Thermal Camera Viewer"
-authors = ["you"]
+authors = ["hmenzagh"]
 edition = "2021"
 
 [lib]

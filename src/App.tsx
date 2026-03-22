@@ -13,31 +13,35 @@ function App() {
   const [palette, setPalette] = useState<Palette>("ironblack");
   const [frameStats, setFrameStats] = useState({ min: 0, max: 0 });
 
+  const handleStats = useCallback((min: number, max: number) => {
+    setFrameStats({ min, max });
+  }, []);
+
   const handlePaletteChange = useCallback(
     async (p: Palette) => {
       await camera.setPalette(p);
       setPalette(p);
     },
-    [camera]
+    [camera.setPalette]
   );
 
   const handleConnect = useCallback(async () => {
     await camera.connect();
     await camera.startStream(160, 120, 9);
-  }, [camera]);
+  }, [camera.connect, camera.startStream]);
 
   const handlePolarityChange = useCallback(
     (polarity: number) => {
       camera.setPolarity(polarity);
     },
-    [camera]
+    [camera.setPolarity]
   );
 
   const handleRoiChange = useCallback(
     (r1: number, c1: number, r2: number, c2: number) => {
       camera.setSpotmeterRoi(r1, c1, r2, c2);
     },
-    [camera]
+    [camera.setSpotmeterRoi]
   );
 
   const isStreaming = camera.state === "streaming";
@@ -66,7 +70,7 @@ function App() {
         <div className="video-container">
           <VideoCanvas
             streaming={isStreaming}
-            onStats={(min, max) => setFrameStats({ min, max })}
+            onStats={handleStats}
             className="thermal-video"
           />
           {isStreaming && showRadiometry && (
