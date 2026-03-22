@@ -1,11 +1,9 @@
-mod avfoundation;
 mod camera;
 mod commands;
 mod processing;
+mod usb_stream;
 mod uvc_descriptors;
 mod uvc_payload;
-mod usb_stream;
-mod usb_control;
 
 use camera::acquisition::CameraAcquisition;
 use camera::lepton::LeptonController;
