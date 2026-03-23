@@ -58,11 +58,11 @@ impl CameraAcquisition {
             if guard.is_none() {
                 match Upscaler::new() {
                     Ok(up) => {
-                        eprintln!("[thermal-v2] Upscaler initialized ({}x)", up.scale);
+                        eprintln!("[lepton-getthermal] Upscaler initialized ({}x)", up.scale);
                         *guard = Some(up);
                     }
                     Err(e) => {
-                        eprintln!("[thermal-v2] Failed to init upscaler: {e}");
+                        eprintln!("[lepton-getthermal] Failed to init upscaler: {e}");
                         return;
                     }
                 }

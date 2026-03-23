@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
     <key>NSCameraUsageDescription</key>
-    <string>Thermal V2 needs camera access to capture thermal video from the PureThermal device.</string>
+    <string>Lepton-GetThermal needs camera access to capture thermal video from the PureThermal device.</string>
 </dict>
 </plist>

@@ -1,12 +1,12 @@
 [package]
-name = "thermal-v2"
+name = "lepton-getthermal"
 version = "0.1.0"
-description = "FLIR Lepton Thermal Camera Viewer"
+description = "Lepton-GetThermal — FLIR Lepton Thermal Camera Viewer"
 authors = ["hmenzagh"]
 edition = "2021"
 
 [lib]
-name = "thermal_v2_lib"
+name = "lepton_getthermal_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

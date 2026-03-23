@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Export a thermal super-resolution model to ONNX for use with Thermal_V2.
+Export a thermal super-resolution model to ONNX for use with Lepton-GetThermal.
 
 Supports two modes:
 1. ESPCN (default) - Simple sub-pixel CNN, can use pre-trained weights from torchvision

@@ -23,13 +23,13 @@ struct FrameEvent {
 
 #[tauri::command]
 pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
-    eprintln!("[thermal-v2] Connecting via IOKit USB...");
+    eprintln!("[lepton-getthermal] Connecting via IOKit USB...");
 
     let stream = Arc::new(UsbStream::open().map_err(|e| {
-        eprintln!("[thermal-v2] USB open failed: {e}");
+        eprintln!("[lepton-getthermal] USB open failed: {e}");
         e.to_string()
     })?);
-    eprintln!("[thermal-v2] USB device opened");
+    eprintln!("[lepton-getthermal] USB device opened");
 
     let cam = CameraAcquisition::new(stream.clone());
     *state.camera.lock() = Some(cam);
@@ -38,7 +38,7 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
     // Force AGC off to preserve raw radiometric Y16 values
     let _ = lepton.set_agc_enable(false);
     let part = lepton.get_part_number().unwrap_or_default();
-    eprintln!("[thermal-v2] Lepton controller ready, part: {part}");
+    eprintln!("[lepton-getthermal] Lepton controller ready, part: {part}");
 
     *state.lepton.lock() = Some(lepton);
     Ok(part)
@@ -46,7 +46,7 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
 
 #[tauri::command]
 pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
-    eprintln!("[thermal-v2] start_stream called");
+    eprintln!("[lepton-getthermal] start_stream called");
     let cam_guard = state.camera.lock();
     let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
 
@@ -106,10 +106,10 @@ pub fn set_isotherm(state: State<'_, AppState>, raw_threshold: u16) -> Result<()
 
 #[tauri::command]
 pub fn set_upscale(state: State<'_, AppState>, enabled: bool) -> Result<(), String> {
-    eprintln!("[thermal-v2] set_upscale called: enabled={enabled}");
+    eprintln!("[lepton-getthermal] set_upscale called: enabled={enabled}");
     let cam_guard = state.camera.lock();
     let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
     cam.set_upscale(enabled);
-    eprintln!("[thermal-v2] set_upscale done");
+    eprintln!("[lepton-getthermal] set_upscale done");
     Ok(())
 }

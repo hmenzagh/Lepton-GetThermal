@@ -1,8 +1,8 @@
-# Thermal V2
+# Lepton-GetThermal
 
 A macOS thermal camera viewer for the FLIR Lepton module via PureThermal USB adapter. Built with Tauri v2, Rust, and React.
 
-Thermal V2 bypasses AVFoundation — which only exposes pre-processed BGRA frames — to stream raw **Y16 radiometric data** directly over IOKit isochronous USB. This preserves the full 16-bit thermal values needed for accurate temperature measurement and custom processing.
+Lepton-GetThermal bypasses AVFoundation — which only exposes pre-processed BGRA frames — to stream raw **Y16 radiometric data** directly over IOKit isochronous USB. This preserves the full 16-bit thermal values needed for accurate temperature measurement and custom processing.
 
 ## Features
 
@@ -37,8 +37,8 @@ npm run tauri build
 ```
 
 The production build outputs:
-- `src-tauri/target/release/bundle/macos/Thermal V2.app`
-- `src-tauri/target/release/bundle/dmg/Thermal V2_0.1.0_aarch64.dmg`
+- `src-tauri/target/release/bundle/macos/Lepton-GetThermal.app`
+- `src-tauri/target/release/bundle/dmg/Lepton-GetThermal_0.1.0_aarch64.dmg`
 
 ## Architecture
 
@@ -85,7 +85,7 @@ Each frame follows this path:
 
 ### Why IOKit instead of AVFoundation?
 
-PureThermal exposes two video formats via UVC: BGRA (processed by the device's internal AGC) and Y16 (raw 16-bit radiometric). AVFoundation only surfaces the BGRA format. To get raw thermal data for accurate temperature measurement and custom processing, Thermal V2 talks to the device directly via IOKit isochronous USB transfers.
+PureThermal exposes two video formats via UVC: BGRA (processed by the device's internal AGC) and Y16 (raw 16-bit radiometric). AVFoundation only surfaces the BGRA format. To get raw thermal data for accurate temperature measurement and custom processing, Lepton-GetThermal talks to the device directly via IOKit isochronous USB transfers.
 
 ## Project structure
 

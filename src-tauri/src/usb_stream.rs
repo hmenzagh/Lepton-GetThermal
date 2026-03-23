@@ -205,12 +205,12 @@ impl UsbStream {
         if ret != 0 {
             return Err(CameraError::OpenFailed(format!("USBDeviceOpen failed: {ret}")));
         }
-        eprintln!("[thermal-v2] USB device opened exclusively");
+        eprintln!("[lepton-getthermal] USB device opened exclusively");
 
         // Set configuration 1
         let ret = unsafe { thermal_usb_set_configuration(device, 1) };
         if ret != 0 {
-            eprintln!("[thermal-v2] SetConfiguration returned {ret} (may already be set)");
+            eprintln!("[lepton-getthermal] SetConfiguration returned {ret} (may already be set)");
         }
 
         // Read configuration descriptor
@@ -226,7 +226,7 @@ impl UsbStream {
         // Parse descriptors to find Y16 config
         let config = uvc_descriptors::parse_uvc_config(&desc_buf)
             .map_err(|e| CameraError::UvcError(e))?;
-        eprintln!("[thermal-v2] UVC config: format={}, frame={}, {}x{}, interval={}, alt={}, ep=0x{:02X}",
+        eprintln!("[lepton-getthermal] UVC config: format={}, frame={}, {}x{}, interval={}, alt={}, ep=0x{:02X}",
             config.format_index, config.frame_index, config.width, config.height,
             config.frame_interval, config.alt_setting, config.endpoint_addr);
 
@@ -242,7 +242,7 @@ impl UsbStream {
             unsafe { thermal_usb_close_device(device) };
             return Err(CameraError::OpenFailed(format!("USBInterfaceOpen failed: {ret}")));
         }
-        eprintln!("[thermal-v2] VideoStreaming interface opened");
+        eprintln!("[lepton-getthermal] VideoStreaming interface opened");
 
         Ok(Self {
             device,
@@ -285,7 +285,7 @@ impl UsbStream {
         let neg_format = probe.b_format_index;
         let neg_frame = probe.b_frame_index;
         let neg_interval = { probe.dw_frame_interval };
-        eprintln!("[thermal-v2] Probe negotiated: format={}, frame={}, interval={}",
+        eprintln!("[lepton-getthermal] Probe negotiated: format={}, frame={}, interval={}",
             neg_format, neg_frame, neg_interval);
 
         let ret = unsafe { thermal_usb_vs_commit(self.device, self.config.vs_interface_num, probe_bytes.as_mut_ptr(), 26) };
@@ -305,14 +305,14 @@ impl UsbStream {
         if ret != 0 {
             return Err(CameraError::StreamFailed(format!("Pipe ref not found for endpoint 0x{:02X}: {ret}", self.config.endpoint_addr)));
         }
-        eprintln!("[thermal-v2] Pipe ref: {pipe_ref}");
+        eprintln!("[lepton-getthermal] Pipe ref: {pipe_ref}");
 
         // Decode wMaxPacketSize (USB 2.0 HS: bits 12:11 = additional transactions)
         let raw_max_pkt = self.config.max_packet_size;
         let pkt_size = (raw_max_pkt & 0x7FF) as usize;
         let mult = ((raw_max_pkt >> 11) & 0x3) as usize + 1;
         let effective_max_pkt = pkt_size * mult;
-        eprintln!("[thermal-v2] Max packet: {pkt_size} x {mult} = {effective_max_pkt}");
+        eprintln!("[lepton-getthermal] Max packet: {pkt_size} x {mult} = {effective_max_pkt}");
 
         let shared = Arc::new(IsochSharedState {
             intf: self.vs_intf,
@@ -333,7 +333,7 @@ impl UsbStream {
         });
 
         *self.stream_thread.lock() = Some(thread);
-        eprintln!("[thermal-v2] Streaming started");
+        eprintln!("[lepton-getthermal] Streaming started");
         Ok(())
     }
 
@@ -341,7 +341,7 @@ impl UsbStream {
         // Create async event source and add to this thread's run loop
         let source = unsafe { thermal_usb_create_event_source(shared.intf) };
         if source.is_null() {
-            eprintln!("[thermal-v2] Failed to create async event source");
+            eprintln!("[lepton-getthermal] Failed to create async event source");
             return;
         }
 
@@ -405,7 +405,7 @@ impl UsbStream {
             };
 
             if ret != 0 {
-                eprintln!("[thermal-v2] ReadIsochPipeAsync failed: {ret}");
+                eprintln!("[lepton-getthermal] ReadIsochPipeAsync failed: {ret}");
                 unsafe { drop(Box::from_raw(transfer_ptr as *mut IsochTransfer)) };
             }
 
@@ -415,7 +415,7 @@ impl UsbStream {
         // Run the run loop — blocks until CFRunLoopStop is called
         unsafe { CFRunLoopRun() };
         unsafe { CFRelease(source) };
-        eprintln!("[thermal-v2] Streaming thread exited");
+        eprintln!("[lepton-getthermal] Streaming thread exited");
     }
 
     /// Stop streaming and release isochronous resources.
@@ -437,7 +437,7 @@ impl UsbStream {
         // Reset alt interface to 0 (release bandwidth)
         unsafe { thermal_usb_set_alt_interface(self.vs_intf, 0) };
 
-        eprintln!("[thermal-v2] Streaming stopped");
+        eprintln!("[lepton-getthermal] Streaming stopped");
         Ok(())
     }
 
@@ -475,7 +475,7 @@ impl Drop for UsbStream {
             thermal_usb_close_interface(self.vs_intf);
             thermal_usb_close_device(self.device);
         }
-        eprintln!("[thermal-v2] USB device closed");
+        eprintln!("[lepton-getthermal] USB device closed");
     }
 }
 
@@ -499,7 +499,7 @@ extern "C" fn isoch_completion_callback(
     }
 
     if result != 0 {
-        eprintln!("[thermal-v2] Isoch callback error: {result}");
+        eprintln!("[lepton-getthermal] Isoch callback error: {result}");
     }
 
     // Process each microframe's payload data
@@ -522,7 +522,7 @@ extern "C" fn isoch_completion_callback(
                 }
                 Ok(None) => {}
                 Err(e) => {
-                    eprintln!("[thermal-v2] Frame assembly error: {e}");
+                    eprintln!("[lepton-getthermal] Frame assembly error: {e}");
                 }
             }
         }
@@ -560,7 +560,7 @@ extern "C" fn isoch_completion_callback(
     };
 
     if ret != 0 {
-        eprintln!("[thermal-v2] ReadIsochPipeAsync resubmit failed: {ret}");
+        eprintln!("[lepton-getthermal] ReadIsochPipeAsync resubmit failed: {ret}");
         unsafe { drop(Box::from_raw(transfer_ptr as *mut IsochTransfer)) };
     }
 }

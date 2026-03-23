@@ -14,11 +14,11 @@ fn with_lepton<T: std::fmt::Debug>(
     let lepton = guard.as_ref().ok_or("Camera not connected")?;
     match f(lepton) {
         Ok(val) => {
-            eprintln!("[thermal-v2] {cmd_name}: OK ({val:?})");
+            eprintln!("[lepton-getthermal] {cmd_name}: OK ({val:?})");
             Ok(val)
         }
         Err(e) => {
-            eprintln!("[thermal-v2] {cmd_name}: ERROR: {e}");
+            eprintln!("[lepton-getthermal] {cmd_name}: ERROR: {e}");
             Err(e.to_string())
         }
     }
@@ -80,7 +80,7 @@ pub fn get_spot_temperature(state: State<'_, AppState>) -> Result<f64, String> {
         // Read spotmeter object (4 words: value, max, min, population)
         let words = l.get_attribute(0x0ED0, 4)?; // LEP_RAD_SPOTMETER_OBJ_KELVIN
         let spot_raw = words[0]; // first word is the spotmeter value
-        eprintln!("[thermal-v2] spot: resolution={resolution}, raw={spot_raw}, words={words:?}");
+        eprintln!("[lepton-getthermal] spot: resolution={resolution}, raw={spot_raw}, words={words:?}");
 
         // Determine resolution: if raw value > 10000, it's clearly 0.01K encoding
         // (at 0.1K, 10000 raw = 727°C which is unrealistic for normal use)

@@ -7,10 +7,10 @@ fn main() {
     {
         use std::fs::File;
         use std::os::unix::io::IntoRawFd;
-        if let Ok(f) = File::create("/tmp/thermal-v2.log") {
+        if let Ok(f) = File::create("/tmp/lepton-getthermal.log") {
             let fd = f.into_raw_fd();
             unsafe { libc::dup2(fd, 2); }
         }
     }
-    thermal_v2_lib::run()
+    lepton_getthermal_lib::run()
 }
