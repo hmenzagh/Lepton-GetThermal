@@ -19,13 +19,20 @@ pub struct FrameResult {
 }
 
 /// Full processing pipeline: Y16 → auto-gain → colorize → RGBA.
+/// When `invert` is true, the grayscale is flipped (white-hot ↔ black-hot).
 pub fn process_frame(
     y16_data: &[u8],
     width: usize,
     height: usize,
     palette: Palette,
+    invert: bool,
 ) -> FrameResult {
-    let stats = autogain::auto_gain(y16_data, width, height);
+    let mut stats = autogain::auto_gain(y16_data, width, height);
+    if invert {
+        for val in stats.grayscale.iter_mut() {
+            *val = 255 - *val;
+        }
+    }
     let rgba = colorize::colorize(&stats.grayscale, palette);
     FrameResult {
         rgba,
@@ -47,7 +54,7 @@ mod tests {
     fn pipeline_produces_correct_rgba_output() {
         // 2x2 frame, values 0-300
         let frame = make_y16_frame(&[0, 100, 200, 300]);
-        let result = process_frame(&frame, 2, 2, Palette::Grayscale);
+        let result = process_frame(&frame, 2, 2, Palette::Grayscale, false);
 
         assert_eq!(result.rgba.len(), 16); // 4 pixels * 4 RGBA
         assert_eq!(result.width, 2);

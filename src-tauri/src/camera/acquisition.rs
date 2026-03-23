@@ -14,6 +14,7 @@ pub struct CameraAcquisition {
     stream: Arc<UsbStream>,
     streaming: Arc<AtomicBool>,
     current_palette: Arc<Mutex<Palette>>,
+    inverted: Arc<AtomicBool>,
 }
 
 unsafe impl Send for CameraAcquisition {}
@@ -24,11 +25,16 @@ impl CameraAcquisition {
             stream,
             streaming: Arc::new(AtomicBool::new(false)),
             current_palette: Arc::new(Mutex::new(Palette::IronBlack)),
+            inverted: Arc::new(AtomicBool::new(false)),
         }
     }
 
     pub fn set_palette(&self, palette: Palette) {
         *self.current_palette.lock() = palette;
+    }
+
+    pub fn set_inverted(&self, invert: bool) {
+        self.inverted.store(invert, Ordering::Relaxed);
     }
 
     pub fn is_streaming(&self) -> bool {
@@ -40,10 +46,12 @@ impl CameraAcquisition {
         F: Fn(FrameResult) + Send + Sync + 'static,
     {
         let palette = self.current_palette.clone();
+        let inverted = self.inverted.clone();
 
         self.stream.start_stream(move |y16_data, width, height| {
             let current_palette = *palette.lock();
-            let result = processing::process_frame(y16_data, width as usize, height as usize, current_palette);
+            let invert = inverted.load(Ordering::Relaxed);
+            let result = processing::process_frame(y16_data, width as usize, height as usize, current_palette, invert);
             on_frame(result);
         })?;
 

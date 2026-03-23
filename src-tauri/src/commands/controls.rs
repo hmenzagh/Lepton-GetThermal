@@ -55,11 +55,6 @@ pub fn get_polarity(state: State<'_, AppState>) -> Result<u16, String> {
 }
 
 #[tauri::command]
-pub fn set_polarity(state: State<'_, AppState>, polarity: u16) -> Result<(), String> {
-    with_lepton(&state, "set_polarity", |l| l.set_polarity(polarity))
-}
-
-#[tauri::command]
 pub fn get_gain_mode(state: State<'_, AppState>) -> Result<u16, String> {
     with_lepton(&state, "get_gain_mode", |l| l.get_gain_mode())
 }

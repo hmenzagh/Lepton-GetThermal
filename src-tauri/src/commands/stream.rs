@@ -81,3 +81,11 @@ pub fn set_palette(state: State<'_, AppState>, palette: String) -> Result<(), St
     cam.set_palette(p);
     Ok(())
 }
+
+#[tauri::command]
+pub fn set_polarity(state: State<'_, AppState>, polarity: u32) -> Result<(), String> {
+    let cam_guard = state.camera.lock();
+    let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
+    cam.set_inverted(polarity != 0);
+    Ok(())
+}
