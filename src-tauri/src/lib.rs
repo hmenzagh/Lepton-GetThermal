@@ -29,6 +29,7 @@ pub fn run() {
             commands::stream::stop_stream,
             commands::stream::set_palette,
             commands::stream::set_polarity,
+            commands::stream::set_isotherm,
             commands::controls::perform_ffc,
             commands::controls::get_polarity,
             commands::controls::get_gain_mode,

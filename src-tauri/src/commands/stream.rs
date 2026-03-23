@@ -17,6 +17,8 @@ struct FrameEvent {
     height: usize,
     min_val: u16,
     max_val: u16,
+    min_pos: usize,
+    max_pos: usize,
 }
 
 #[tauri::command]
@@ -55,6 +57,8 @@ pub fn start_stream(app: AppHandle, state: State<'_, AppState>) -> Result<(), St
             height: frame_result.height,
             min_val: frame_result.stats.min_val,
             max_val: frame_result.stats.max_val,
+            min_pos: frame_result.stats.min_pos,
+            max_pos: frame_result.stats.max_pos,
         };
         let _ = app.emit("thermal-frame", event);
     })
@@ -89,5 +93,13 @@ pub fn set_polarity(state: State<'_, AppState>, polarity: u32) -> Result<(), Str
     let cam_guard = state.camera.lock();
     let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
     cam.set_inverted(polarity != 0);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_isotherm(state: State<'_, AppState>, raw_threshold: u16) -> Result<(), String> {
+    let cam_guard = state.camera.lock();
+    let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
+    cam.set_isotherm_raw(raw_threshold);
     Ok(())
 }

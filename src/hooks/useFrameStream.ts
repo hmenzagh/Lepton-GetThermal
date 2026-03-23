@@ -2,9 +2,16 @@ import { useEffect, useRef, useCallback } from "react";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { FrameEvent } from "../lib/types";
 
+export interface FrameStats {
+  minVal: number;
+  maxVal: number;
+  minPos: number;
+  maxPos: number;
+}
+
 export function useFrameStream(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  onStats?: (minVal: number, maxVal: number) => void
+  onStats?: (stats: FrameStats) => void
 ) {
   const unlistenRef = useRef<UnlistenFn | null>(null);
 
@@ -15,7 +22,7 @@ export function useFrameStream(
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const { data, width, height, min_val, max_val } = event.payload;
+      const { data, width, height, min_val, max_val, min_pos, max_pos } = event.payload;
 
       // Decode base64 RGBA data
       const binary = atob(data);
@@ -36,7 +43,7 @@ export function useFrameStream(
       const imageData = new ImageData(bytes, width, height);
       ctx.putImageData(imageData, 0, 0);
 
-      onStats?.(min_val, max_val);
+      onStats?.({ minVal: min_val, maxVal: max_val, minPos: min_pos, maxPos: max_pos });
     });
   }, [canvasRef, onStats]);
 

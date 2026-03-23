@@ -4,17 +4,20 @@ import { ControlPanel } from "./components/ControlPanel";
 import { TemperatureDisplay } from "./components/TemperatureDisplay";
 import { PaletteBar } from "./components/PaletteBar";
 import { SpotmeterOverlay } from "./components/SpotmeterOverlay";
+import { MarkersOverlay } from "./components/MarkersOverlay";
 import { useCamera } from "./hooks/useCamera";
+import { FrameStats } from "./hooks/useFrameStream";
 import { Palette, DEFAULT_WIDTH, DEFAULT_HEIGHT } from "./lib/types";
 import "./App.css";
 
 function App() {
   const camera = useCamera();
   const [palette, setPalette] = useState<Palette>("ironblack");
-  const [frameStats, setFrameStats] = useState({ min: 0, max: 0 });
+  const [frameStats, setFrameStats] = useState<FrameStats>({ minVal: 0, maxVal: 0, minPos: 0, maxPos: 0 });
+  const [showMarkers, setShowMarkers] = useState(false);
 
-  const handleStats = useCallback((min: number, max: number) => {
-    setFrameStats({ min, max });
+  const handleStats = useCallback((stats: FrameStats) => {
+    setFrameStats(stats);
   }, []);
 
   const handlePaletteChange = useCallback(
@@ -37,6 +40,19 @@ function App() {
     [camera.setPolarity]
   );
 
+  const handleIsothermChange = useCallback(
+    (tempC: number | null) => {
+      if (tempC === null) {
+        camera.setIsotherm(0);
+      } else {
+        // Convert Celsius to raw Y16 (centikelvins: (C + 273.15) * 100)
+        const raw = Math.round((tempC + 273.15) * 100);
+        camera.setIsotherm(raw);
+      }
+    },
+    [camera.setIsotherm]
+  );
+
   const handleRoiChange = useCallback(
     (r1: number, c1: number, r2: number, c2: number) => {
       camera.setSpotmeterRoi(r1, c1, r2, c2);
@@ -56,6 +72,9 @@ function App() {
         onPaletteChange={handlePaletteChange}
         onFfc={camera.performFfc}
         onPolarityChange={handlePolarityChange}
+        onIsothermChange={handleIsothermChange}
+        showMarkers={showMarkers}
+        onToggleMarkers={() => setShowMarkers((v) => !v)}
       />
       <main className="video-area">
         {(camera.state === "disconnected" || isConnecting) && (
@@ -75,13 +94,23 @@ function App() {
             </span>
           </button>
         )}
-        {camera.error && <div className="error">{camera.error}</div>}
+        {camera.error && <div className="error" onClick={() => camera.clearError()} style={{ cursor: "pointer" }}>{camera.error}</div>}
         <div className="video-container">
           <VideoCanvas
             streaming={isStreaming}
             onStats={handleStats}
             className="thermal-video"
           />
+          {isStreaming && showMarkers && (
+            <MarkersOverlay
+              width={DEFAULT_WIDTH}
+              height={DEFAULT_HEIGHT}
+              minPos={frameStats.minPos}
+              maxPos={frameStats.maxPos}
+              minVal={frameStats.minVal}
+              maxVal={frameStats.maxVal}
+            />
+          )}
           {isStreaming && showRadiometry && (
             <SpotmeterOverlay
               canvasWidth={DEFAULT_WIDTH}
@@ -109,8 +138,8 @@ function App() {
             />
           )}
           <PaletteBar
-            minVal={frameStats.min}
-            maxVal={frameStats.max}
+            minVal={frameStats.minVal}
+            maxVal={frameStats.maxVal}
             palette={palette}
           />
         </aside>

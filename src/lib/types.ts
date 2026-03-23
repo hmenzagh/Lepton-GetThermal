@@ -4,6 +4,8 @@ export interface FrameEvent {
   height: number;
   min_val: number;
   max_val: number;
+  min_pos: number;
+  max_pos: number;
 }
 
 export interface DeviceInfo {

@@ -59,6 +59,15 @@ export function useCamera() {
     await invoke("set_polarity", { polarity });
   }, []);
 
+  const setIsotherm = useCallback(async (rawThreshold: number) => {
+    await invoke("set_isotherm", { rawThreshold });
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (state === "error") setState("disconnected");
+  }, [state]);
+
   const setGainMode = useCallback(async (mode: number) => {
     await invoke("set_gain_mode", { mode });
   }, []);
@@ -93,6 +102,8 @@ export function useCamera() {
     setPalette,
     performFfc,
     setPolarity,
+    setIsotherm,
+    clearError,
     setGainMode,
     getSpotTemperature,
     setSpotmeterRoi,

@@ -18,10 +18,14 @@ const gradientMap: Record<string, string> = {
   )`,
   rainbow: `linear-gradient(to top,
     rgb(1,3,74) 0%,
-    rgb(0,94,208) 25%,
-    rgb(67,171,60) 50%,
-    rgb(255,131,31) 75%,
-    rgb(255,220,196) 100%
+    rgb(0,61,154) 12.5%,
+    rgb(0,113,223) 25%,
+    rgb(67,171,60) 37.5%,
+    rgb(212,215,3) 50%,
+    rgb(253,174,19) 62.5%,
+    rgb(251,33,59) 75%,
+    rgb(251,101,112) 87.5%,
+    rgb(255,233,208) 100%
   )`,
   grayscale: "linear-gradient(to top, rgb(0,0,0), rgb(255,255,255))",
 };

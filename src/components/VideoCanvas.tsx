@@ -1,9 +1,9 @@
 import { useRef, useEffect } from "react";
-import { useFrameStream } from "../hooks/useFrameStream";
+import { useFrameStream, FrameStats } from "../hooks/useFrameStream";
 
 interface VideoCanvasProps {
   streaming: boolean;
-  onStats?: (minVal: number, maxVal: number) => void;
+  onStats?: (stats: FrameStats) => void;
   onCanvasClick?: (row: number, col: number) => void;
   className?: string;
 }
@@ -21,10 +21,8 @@ export function VideoCanvas({ streaming, onStats, onCanvasClick, className }: Vi
   }, [streaming, start, stop]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    console.log("[VideoCanvas] click detected, onCanvasClick=", !!onCanvasClick, "canvas=", !!canvasRef.current);
     if (!onCanvasClick || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
-    // Map display coordinates to canvas pixel coordinates
     const scaleX = canvasRef.current.width / rect.width;
     const scaleY = canvasRef.current.height / rect.height;
     const col = Math.round((e.clientX - rect.left) * scaleX);

@@ -1,5 +1,5 @@
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
+    atomic::{AtomicBool, AtomicU16, Ordering},
     Arc,
 };
 
@@ -15,6 +15,8 @@ pub struct CameraAcquisition {
     streaming: Arc<AtomicBool>,
     current_palette: Arc<Mutex<Palette>>,
     inverted: Arc<AtomicBool>,
+    /// Raw Y16 threshold for isotherm overlay. 0 = disabled.
+    isotherm_raw: Arc<AtomicU16>,
 }
 
 unsafe impl Send for CameraAcquisition {}
@@ -26,6 +28,7 @@ impl CameraAcquisition {
             streaming: Arc::new(AtomicBool::new(false)),
             current_palette: Arc::new(Mutex::new(Palette::IronBlack)),
             inverted: Arc::new(AtomicBool::new(false)),
+            isotherm_raw: Arc::new(AtomicU16::new(0)),
         }
     }
 
@@ -35,6 +38,10 @@ impl CameraAcquisition {
 
     pub fn set_inverted(&self, invert: bool) {
         self.inverted.store(invert, Ordering::Relaxed);
+    }
+
+    pub fn set_isotherm_raw(&self, threshold: u16) {
+        self.isotherm_raw.store(threshold, Ordering::Relaxed);
     }
 
     pub fn is_streaming(&self) -> bool {
@@ -47,11 +54,13 @@ impl CameraAcquisition {
     {
         let palette = self.current_palette.clone();
         let inverted = self.inverted.clone();
+        let isotherm_raw = self.isotherm_raw.clone();
 
         self.stream.start_stream(move |y16_data, width, height| {
             let current_palette = *palette.lock();
             let invert = inverted.load(Ordering::Relaxed);
-            let result = processing::process_frame(y16_data, width as usize, height as usize, current_palette, invert);
+            let iso = isotherm_raw.load(Ordering::Relaxed);
+            let result = processing::process_frame(y16_data, width as usize, height as usize, current_palette, invert, iso);
             on_frame(result);
         })?;
 

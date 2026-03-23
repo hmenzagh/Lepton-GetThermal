@@ -8,6 +8,9 @@ interface ControlPanelProps {
   onPaletteChange: (palette: Palette) => void;
   onFfc: () => void;
   onPolarityChange: (polarity: number) => void;
+  onIsothermChange: (tempC: number | null) => void;
+  showMarkers: boolean;
+  onToggleMarkers: () => void;
 }
 
 export function ControlPanel({
@@ -16,6 +19,9 @@ export function ControlPanel({
   onPaletteChange,
   onFfc,
   onPolarityChange,
+  onIsothermChange,
+  showMarkers,
+  onToggleMarkers,
 }: ControlPanelProps) {
   return (
     <aside className="control-panel">
@@ -29,6 +35,9 @@ export function ControlPanel({
         onPaletteChange={onPaletteChange}
         onFfc={onFfc}
         onPolarityChange={onPolarityChange}
+        onIsothermChange={onIsothermChange}
+        showMarkers={showMarkers}
+        onToggleMarkers={onToggleMarkers}
       />
     </aside>
   );
