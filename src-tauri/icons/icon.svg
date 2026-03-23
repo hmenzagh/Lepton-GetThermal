@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="thermal-v" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe94a"/>
+      <stop offset="25%" stop-color="#ff8c00"/>
+      <stop offset="50%" stop-color="#e8302a"/>
+      <stop offset="75%" stop-color="#c41873"/>
+      <stop offset="100%" stop-color="#1a0a3e"/>
+    </linearGradient>
+    <radialGradient id="thermal-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe94a"/>
+      <stop offset="30%" stop-color="#ff8c00"/>
+      <stop offset="55%" stop-color="#e8302a"/>
+      <stop offset="78%" stop-color="#c41873"/>
+      <stop offset="100%" stop-color="#1a0a3e"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="#0e0b1a"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#1e1832" stroke-width="3"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#thermal-v)" stroke-width="18" opacity="0.3"/>
+  <circle cx="256" cy="256" r="152" fill="none" stroke="url(#thermal-v)" stroke-width="12" opacity="0.5"/>
+  <circle cx="256" cy="256" r="120" fill="none" stroke="url(#thermal-v)" stroke-width="24" opacity="0.7"/>
+  <circle cx="256" cy="256" r="82" fill="none" stroke="url(#thermal-v)" stroke-width="16" opacity="0.9"/>
+  <circle cx="256" cy="256" r="50" fill="url(#thermal-radial)"/>
+  <circle cx="256" cy="256" r="18" fill="#ffe94a" opacity="0.95"/>
+  <ellipse cx="210" cy="200" rx="40" ry="16" fill="white" opacity="0.06" transform="rotate(-30 210 200)"/>
+</svg>
