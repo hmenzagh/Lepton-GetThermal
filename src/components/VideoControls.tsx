@@ -6,7 +6,6 @@ interface VideoControlsProps {
   onFfc: () => void;
   onPolarityChange: (polarity: number) => void;
   onIsothermChange: (tempC: number | null) => void;
-  onGainModeChange: (mode: number) => void;
   onCapture: () => void;
   showMarkers: boolean;
   onToggleMarkers: () => void;
@@ -19,7 +18,6 @@ export function VideoControls({
   onFfc,
   onPolarityChange,
   onIsothermChange,
-  onGainModeChange,
   onCapture,
   showMarkers,
   onToggleMarkers,
@@ -62,14 +60,6 @@ export function VideoControls({
           <select onChange={(e) => onPolarityChange(Number(e.target.value))}>
             <option value={0}>White Hot</option>
             <option value={1}>Black Hot</option>
-          </select>
-        </label>
-        <label>
-          Gain
-          <select onChange={(e) => onGainModeChange(Number(e.target.value))}>
-            <option value={0}>High</option>
-            <option value={1}>Low</option>
-            <option value={2}>Auto</option>
           </select>
         </label>
         <label className="toggle">

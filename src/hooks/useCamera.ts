@@ -69,10 +69,6 @@ export function useCamera() {
     setDeviceInfo(null);
   }, []);
 
-  const setGainMode = useCallback(async (mode: number) => {
-    await invoke("set_gain_mode", { mode });
-  }, []);
-
   const getSpotTemperature = useCallback(async (): Promise<number> => {
     return invoke<number>("get_spot_temperature");
   }, []);
@@ -105,7 +101,6 @@ export function useCamera() {
     setPolarity,
     setIsotherm,
     clearError,
-    setGainMode,
     getSpotTemperature,
     setSpotmeterRoi,
   };

@@ -32,8 +32,6 @@ pub fn run() {
             commands::stream::set_isotherm,
             commands::controls::perform_ffc,
             commands::controls::get_polarity,
-            commands::controls::get_gain_mode,
-            commands::controls::set_gain_mode,
             commands::controls::get_device_info,
             commands::controls::get_spotmeter_roi,
             commands::controls::set_spotmeter_roi,

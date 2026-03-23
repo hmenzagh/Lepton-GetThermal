@@ -89,7 +89,6 @@ function App() {
         onFfc={camera.performFfc}
         onPolarityChange={handlePolarityChange}
         onIsothermChange={handleIsothermChange}
-        onGainModeChange={(mode) => camera.setGainMode(mode)}
         onCapture={handleCapture}
         showMarkers={showMarkers}
         onToggleMarkers={() => setShowMarkers((v) => !v)}

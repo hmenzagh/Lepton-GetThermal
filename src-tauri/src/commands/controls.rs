@@ -35,16 +35,6 @@ pub fn get_polarity(state: State<'_, AppState>) -> Result<u16, String> {
 }
 
 #[tauri::command]
-pub fn get_gain_mode(state: State<'_, AppState>) -> Result<u16, String> {
-    with_lepton(&state, "get_gain_mode", |l| l.get_gain_mode())
-}
-
-#[tauri::command]
-pub fn set_gain_mode(state: State<'_, AppState>, mode: u16) -> Result<(), String> {
-    with_lepton(&state, "set_gain_mode", |l| l.set_gain_mode(mode))
-}
-
-#[tauri::command]
 pub fn get_device_info(state: State<'_, AppState>) -> Result<DeviceInfo, String> {
     with_lepton(&state, "get_device_info", |l| {
         let part = l.get_part_number()?;
