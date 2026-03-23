@@ -36,6 +36,7 @@ export function TemperatureDisplay({
       onClick={() => setUseFahrenheit((f) => !f)}
       title="Click to toggle \u00b0C/\u00b0F"
     >
+      <div className="temp-label">Spot</div>
       <span className="temp-value">{displayTemp.toFixed(1)}</span>
       <span className="temp-unit">{unit}</span>
     </div>

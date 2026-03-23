@@ -15,7 +15,7 @@ export function VideoControls({
 }: VideoControlsProps) {
   return (
     <div className="control-section">
-      <h3>Video</h3>
+      <h3>Imaging</h3>
       <label>
         Palette
         <select
@@ -35,7 +35,7 @@ export function VideoControls({
         </select>
       </label>
       <button onClick={onFfc} className="ffc-button">
-        Flat Field Correction (FFC)
+        Run FFC
       </button>
     </div>
   );

@@ -45,6 +45,7 @@ function App() {
   );
 
   const isStreaming = camera.state === "streaming";
+  const isConnecting = camera.state === "connecting";
   const showRadiometry = camera.deviceInfo?.supports_radiometry ?? false;
 
   return (
@@ -57,9 +58,21 @@ function App() {
         onPolarityChange={handlePolarityChange}
       />
       <main className="video-area">
-        {camera.state === "disconnected" && (
-          <button className="connect-button" onClick={handleConnect}>
-            Connect Camera
+        {(camera.state === "disconnected" || isConnecting) && (
+          <button
+            className={`connect-button ${isConnecting ? "connecting" : ""}`}
+            onClick={handleConnect}
+            disabled={isConnecting}
+          >
+            <div className="connect-icon">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+              </svg>
+            </div>
+            <span className="connect-label">
+              {isConnecting ? "Connecting..." : "Connect"}
+            </span>
           </button>
         )}
         {camera.error && <div className="error">{camera.error}</div>}
@@ -77,13 +90,24 @@ function App() {
             />
           )}
         </div>
+        {isStreaming && (
+          <div className="status-bar">
+            <div className="status-indicator">
+              <div className="status-dot live" />
+              <span>LIVE</span>
+            </div>
+            <span>{DEFAULT_WIDTH}x{DEFAULT_HEIGHT}</span>
+          </div>
+        )}
       </main>
-      {showRadiometry && (
+      {isStreaming && (
         <aside className="info-panel">
-          <TemperatureDisplay
-            getSpotTemperature={camera.getSpotTemperature}
-            streaming={isStreaming}
-          />
+          {showRadiometry && (
+            <TemperatureDisplay
+              getSpotTemperature={camera.getSpotTemperature}
+              streaming={isStreaming}
+            />
+          )}
           <PaletteBar
             minVal={frameStats.min}
             maxVal={frameStats.max}

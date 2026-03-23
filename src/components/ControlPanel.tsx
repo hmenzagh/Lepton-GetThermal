@@ -19,7 +19,10 @@ export function ControlPanel({
 }: ControlPanelProps) {
   return (
     <aside className="control-panel">
-      <h2>Thermal V2</h2>
+      <div className="panel-header">
+        <h2>Thermal</h2>
+        <span className="version-badge">V2</span>
+      </div>
       <DeviceInfo info={deviceInfo} />
       <VideoControls
         currentPalette={currentPalette}
