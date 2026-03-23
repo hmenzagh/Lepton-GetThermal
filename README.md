@@ -2,6 +2,8 @@
 
 > **Warning:** This entire application was coded by AI agents (Claude Code). Review the code accordingly before using it in any critical context.
 
+![Lepton-GetThermal screenshot](assets/screenshot.png)
+
 A macOS thermal camera viewer for the FLIR Lepton module via PureThermal USB adapter. Built with Tauri v2, Rust, and React.
 
 Lepton-GetThermal bypasses AVFoundation — which only exposes pre-processed BGRA frames — to stream raw **Y16 radiometric data** directly over IOKit isochronous USB. This preserves the full 16-bit thermal values needed for accurate temperature measurement and custom processing.
