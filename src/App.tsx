@@ -55,10 +55,6 @@ function App() {
         onPaletteChange={handlePaletteChange}
         onFfc={camera.performFfc}
         onPolarityChange={handlePolarityChange}
-        getAgcEnable={camera.getAgcEnable}
-        setAgcEnable={camera.setAgcEnable}
-        getAgcPolicy={camera.getAgcPolicy}
-        setAgcPolicy={camera.setAgcPolicy}
       />
       <main className="video-area">
         {camera.state === "disconnected" && (

@@ -33,6 +33,8 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
     *state.camera.lock() = Some(cam);
 
     let lepton = Arc::new(LeptonController::new(stream));
+    // Force AGC off to preserve raw radiometric Y16 values
+    let _ = lepton.set_agc_enable(false);
     let part = lepton.get_part_number().unwrap_or_default();
     eprintln!("[thermal-v2] Lepton controller ready, part: {part}");
 

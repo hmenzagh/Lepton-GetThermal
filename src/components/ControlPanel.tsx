@@ -1,5 +1,4 @@
 import { VideoControls } from "./VideoControls";
-import { AgcControls } from "./AgcControls";
 import { DeviceInfo } from "./DeviceInfo";
 import { Palette, DeviceInfo as DeviceInfoType } from "../lib/types";
 
@@ -9,10 +8,6 @@ interface ControlPanelProps {
   onPaletteChange: (palette: Palette) => void;
   onFfc: () => void;
   onPolarityChange: (polarity: number) => void;
-  getAgcEnable: () => Promise<boolean>;
-  setAgcEnable: (enable: boolean) => Promise<void>;
-  getAgcPolicy: () => Promise<number>;
-  setAgcPolicy: (policy: number) => Promise<void>;
 }
 
 export function ControlPanel({
@@ -21,10 +16,6 @@ export function ControlPanel({
   onPaletteChange,
   onFfc,
   onPolarityChange,
-  getAgcEnable,
-  setAgcEnable,
-  getAgcPolicy,
-  setAgcPolicy,
 }: ControlPanelProps) {
   return (
     <aside className="control-panel">
@@ -35,12 +26,6 @@ export function ControlPanel({
         onPaletteChange={onPaletteChange}
         onFfc={onFfc}
         onPolarityChange={onPolarityChange}
-      />
-      <AgcControls
-        getAgcEnable={getAgcEnable}
-        setAgcEnable={setAgcEnable}
-        getAgcPolicy={getAgcPolicy}
-        setAgcPolicy={setAgcPolicy}
       />
     </aside>
   );

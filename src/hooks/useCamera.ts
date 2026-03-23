@@ -55,22 +55,6 @@ export function useCamera() {
     }
   }, []);
 
-  const getAgcEnable = useCallback(async (): Promise<boolean> => {
-    return invoke<boolean>("get_agc_enable");
-  }, []);
-
-  const setAgcEnable = useCallback(async (enable: boolean) => {
-    await invoke("set_agc_enable", { enable });
-  }, []);
-
-  const getAgcPolicy = useCallback(async (): Promise<number> => {
-    return invoke<number>("get_agc_policy");
-  }, []);
-
-  const setAgcPolicy = useCallback(async (policy: number) => {
-    await invoke("set_agc_policy", { policy });
-  }, []);
-
   const setPolarity = useCallback(async (polarity: number) => {
     await invoke("set_polarity", { polarity });
   }, []);
@@ -108,10 +92,6 @@ export function useCamera() {
     stopStream,
     setPalette,
     performFfc,
-    getAgcEnable,
-    setAgcEnable,
-    getAgcPolicy,
-    setAgcPolicy,
     setPolarity,
     setGainMode,
     getSpotTemperature,

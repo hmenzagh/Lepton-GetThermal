@@ -30,26 +30,6 @@ pub fn perform_ffc(state: State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn get_agc_enable(state: State<'_, AppState>) -> Result<bool, String> {
-    with_lepton(&state, "get_agc_enable", |l| l.get_agc_enable())
-}
-
-#[tauri::command]
-pub fn set_agc_enable(state: State<'_, AppState>, enable: bool) -> Result<(), String> {
-    with_lepton(&state, "set_agc_enable", |l| l.set_agc_enable(enable))
-}
-
-#[tauri::command]
-pub fn get_agc_policy(state: State<'_, AppState>) -> Result<u16, String> {
-    with_lepton(&state, "get_agc_policy", |l| l.get_agc_policy())
-}
-
-#[tauri::command]
-pub fn set_agc_policy(state: State<'_, AppState>, policy: u16) -> Result<(), String> {
-    with_lepton(&state, "set_agc_policy", |l| l.set_agc_policy(policy))
-}
-
-#[tauri::command]
 pub fn get_polarity(state: State<'_, AppState>) -> Result<u16, String> {
     with_lepton(&state, "get_polarity", |l| l.get_polarity())
 }
