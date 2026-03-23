@@ -65,8 +65,9 @@ export function useCamera() {
 
   const clearError = useCallback(() => {
     setError(null);
-    if (state === "error") setState("disconnected");
-  }, [state]);
+    setState("disconnected");
+    setDeviceInfo(null);
+  }, []);
 
   const setGainMode = useCallback(async (mode: number) => {
     await invoke("set_gain_mode", { mode });

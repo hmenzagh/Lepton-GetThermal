@@ -4,13 +4,13 @@ import { useFrameStream, FrameStats } from "../hooks/useFrameStream";
 interface VideoCanvasProps {
   streaming: boolean;
   onStats?: (stats: FrameStats) => void;
-  onCanvasClick?: (row: number, col: number) => void;
+  onDisconnect?: () => void;
   className?: string;
 }
 
-export function VideoCanvas({ streaming, onStats, onCanvasClick, className }: VideoCanvasProps) {
+export function VideoCanvas({ streaming, onStats, onDisconnect, className }: VideoCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { start, stop } = useFrameStream(canvasRef, onStats);
+  const { start, stop } = useFrameStream(canvasRef, onStats, onDisconnect);
 
   useEffect(() => {
     if (streaming) {
@@ -20,20 +20,9 @@ export function VideoCanvas({ streaming, onStats, onCanvasClick, className }: Vi
     }
   }, [streaming, start, stop]);
 
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!onCanvasClick || !canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
-    const col = Math.round((e.clientX - rect.left) * scaleX);
-    const row = Math.round((e.clientY - rect.top) * scaleY);
-    onCanvasClick(row, col);
-  };
-
   return (
     <canvas
       ref={canvasRef}
-      onClick={handleClick}
       className={className}
       style={{
         imageRendering: "pixelated",
@@ -41,7 +30,6 @@ export function VideoCanvas({ streaming, onStats, onCanvasClick, className }: Vi
         height: "100%",
         objectFit: "contain",
         background: "#000",
-        cursor: onCanvasClick ? "crosshair" : "default",
         pointerEvents: streaming ? "auto" : "none",
       }}
     />

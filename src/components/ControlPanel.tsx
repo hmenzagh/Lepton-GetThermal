@@ -9,8 +9,11 @@ interface ControlPanelProps {
   onFfc: () => void;
   onPolarityChange: (polarity: number) => void;
   onIsothermChange: (tempC: number | null) => void;
+  onGainModeChange: (mode: number) => void;
+  onCapture: () => void;
   showMarkers: boolean;
   onToggleMarkers: () => void;
+  streaming: boolean;
 }
 
 export function ControlPanel({
@@ -20,8 +23,11 @@ export function ControlPanel({
   onFfc,
   onPolarityChange,
   onIsothermChange,
+  onGainModeChange,
+  onCapture,
   showMarkers,
   onToggleMarkers,
+  streaming,
 }: ControlPanelProps) {
   return (
     <aside className="control-panel">
@@ -36,8 +42,11 @@ export function ControlPanel({
         onFfc={onFfc}
         onPolarityChange={onPolarityChange}
         onIsothermChange={onIsothermChange}
+        onGainModeChange={onGainModeChange}
+        onCapture={onCapture}
         showMarkers={showMarkers}
         onToggleMarkers={onToggleMarkers}
+        streaming={streaming}
       />
     </aside>
   );

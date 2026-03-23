@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { VideoCanvas } from "./components/VideoCanvas";
 import { ControlPanel } from "./components/ControlPanel";
 import { TemperatureDisplay } from "./components/TemperatureDisplay";
@@ -15,6 +15,17 @@ function App() {
   const [palette, setPalette] = useState<Palette>("ironblack");
   const [frameStats, setFrameStats] = useState<FrameStats>({ minVal: 0, maxVal: 0, minPos: 0, maxPos: 0 });
   const [showMarkers, setShowMarkers] = useState(false);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleCapture = useCallback(() => {
+    const canvas = videoContainerRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const link = document.createElement("a");
+    link.download = `thermal-${timestamp}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }, []);
 
   const handleStats = useCallback((stats: FrameStats) => {
     setFrameStats(stats);
@@ -60,6 +71,11 @@ function App() {
     [camera.setSpotmeterRoi]
   );
 
+  const handleDisconnect = useCallback(() => {
+    camera.stopStream().catch(() => {});
+    camera.clearError();
+  }, [camera.stopStream, camera.clearError]);
+
   const isStreaming = camera.state === "streaming";
   const isConnecting = camera.state === "connecting";
   const showRadiometry = camera.deviceInfo?.supports_radiometry ?? false;
@@ -73,8 +89,11 @@ function App() {
         onFfc={camera.performFfc}
         onPolarityChange={handlePolarityChange}
         onIsothermChange={handleIsothermChange}
+        onGainModeChange={(mode) => camera.setGainMode(mode)}
+        onCapture={handleCapture}
         showMarkers={showMarkers}
         onToggleMarkers={() => setShowMarkers((v) => !v)}
+        streaming={isStreaming}
       />
       <main className="video-area">
         {(camera.state === "disconnected" || isConnecting) && (
@@ -95,10 +114,11 @@ function App() {
           </button>
         )}
         {camera.error && <div className="error" onClick={() => camera.clearError()} style={{ cursor: "pointer" }}>{camera.error}</div>}
-        <div className="video-container">
+        <div className="video-container" ref={videoContainerRef}>
           <VideoCanvas
             streaming={isStreaming}
             onStats={handleStats}
+            onDisconnect={handleDisconnect}
             className="thermal-video"
           />
           {isStreaming && showMarkers && (

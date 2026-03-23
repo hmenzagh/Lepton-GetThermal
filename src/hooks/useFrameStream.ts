@@ -11,9 +11,21 @@ export interface FrameStats {
 
 export function useFrameStream(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  onStats?: (stats: FrameStats) => void
+  onStats?: (stats: FrameStats) => void,
+  onDisconnect?: () => void
 ) {
   const unlistenRef = useRef<UnlistenFn | null>(null);
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetWatchdog = useCallback(() => {
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    if (onDisconnect) {
+      // If no frame arrives within 3 seconds, consider device disconnected
+      watchdogRef.current = setTimeout(() => {
+        onDisconnect();
+      }, 3000);
+    }
+  }, [onDisconnect]);
 
   const start = useCallback(async () => {
     if (unlistenRef.current) return;
@@ -23,6 +35,8 @@ export function useFrameStream(
       if (!canvas) return;
 
       const { data, width, height, min_val, max_val, min_pos, max_pos } = event.payload;
+
+      resetWatchdog();
 
       // Decode base64 RGBA data
       const binary = atob(data);
@@ -45,11 +59,17 @@ export function useFrameStream(
 
       onStats?.({ minVal: min_val, maxVal: max_val, minPos: min_pos, maxPos: max_pos });
     });
-  }, [canvasRef, onStats]);
+
+    resetWatchdog();
+  }, [canvasRef, onStats, resetWatchdog]);
 
   const stop = useCallback(() => {
     unlistenRef.current?.();
     unlistenRef.current = null;
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
   }, []);
 
   useEffect(() => {

@@ -6,9 +6,12 @@ interface VideoControlsProps {
   onFfc: () => void;
   onPolarityChange: (polarity: number) => void;
   onIsothermChange: (tempC: number | null) => void;
+  onGainModeChange: (mode: number) => void;
+  onCapture: () => void;
   showMarkers: boolean;
   onToggleMarkers: () => void;
   currentPalette: Palette;
+  streaming: boolean;
 }
 
 export function VideoControls({
@@ -16,9 +19,12 @@ export function VideoControls({
   onFfc,
   onPolarityChange,
   onIsothermChange,
+  onGainModeChange,
+  onCapture,
   showMarkers,
   onToggleMarkers,
   currentPalette,
+  streaming,
 }: VideoControlsProps) {
   const [isothermEnabled, setIsothermEnabled] = useState(false);
   const [isothermTemp, setIsothermTemp] = useState(35);
@@ -58,6 +64,14 @@ export function VideoControls({
             <option value={1}>Black Hot</option>
           </select>
         </label>
+        <label>
+          Gain
+          <select onChange={(e) => onGainModeChange(Number(e.target.value))}>
+            <option value={0}>High</option>
+            <option value={1}>Low</option>
+            <option value={2}>Auto</option>
+          </select>
+        </label>
         <label className="toggle">
           <input
             type="checkbox"
@@ -69,6 +83,11 @@ export function VideoControls({
         <button onClick={onFfc} className="ffc-button">
           Run FFC
         </button>
+        {streaming && (
+          <button onClick={onCapture} className="ffc-button">
+            Capture
+          </button>
+        )}
       </div>
       <div className="control-section">
         <h3>Isotherm</h3>
