@@ -63,6 +63,14 @@ export function useCamera() {
     await invoke("set_isotherm", { rawThreshold });
   }, []);
 
+  const setUpscale = useCallback(async (enabled: boolean) => {
+    try {
+      await invoke("set_upscale", { enabled });
+    } catch (e) {
+      setError(String(e));
+    }
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
     setState("disconnected");
@@ -103,5 +111,6 @@ export function useCamera() {
     clearError,
     getSpotTemperature,
     setSpotmeterRoi,
+    setUpscale,
   };
 }

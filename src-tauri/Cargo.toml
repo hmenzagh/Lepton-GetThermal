@@ -22,3 +22,5 @@ base64 = "0.22"
 parking_lot = "0.12"
 thiserror = "2"
 libc = "0.2"
+ort = { version = "2.0.0-rc.12", features = ["ndarray"] }
+ndarray = "0.17"

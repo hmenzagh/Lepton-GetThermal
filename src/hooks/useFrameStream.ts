@@ -7,6 +7,8 @@ export interface FrameStats {
   maxVal: number;
   minPos: number;
   maxPos: number;
+  width: number;
+  height: number;
 }
 
 export function useFrameStream(
@@ -57,7 +59,7 @@ export function useFrameStream(
       const imageData = new ImageData(bytes, width, height);
       ctx.putImageData(imageData, 0, 0);
 
-      onStats?.({ minVal: min_val, maxVal: max_val, minPos: min_pos, maxPos: max_pos });
+      onStats?.({ minVal: min_val, maxVal: max_val, minPos: min_pos, maxPos: max_pos, width, height });
     });
 
     resetWatchdog();

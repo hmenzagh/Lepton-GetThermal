@@ -30,6 +30,7 @@ pub fn run() {
             commands::stream::set_palette,
             commands::stream::set_polarity,
             commands::stream::set_isotherm,
+            commands::stream::set_upscale,
             commands::controls::perform_ffc,
             commands::controls::get_polarity,
             commands::controls::get_device_info,

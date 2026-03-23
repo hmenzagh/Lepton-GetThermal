@@ -13,8 +13,9 @@ import "./App.css";
 function App() {
   const camera = useCamera();
   const [palette, setPalette] = useState<Palette>("ironblack");
-  const [frameStats, setFrameStats] = useState<FrameStats>({ minVal: 0, maxVal: 0, minPos: 0, maxPos: 0 });
+  const [frameStats, setFrameStats] = useState<FrameStats>({ minVal: 0, maxVal: 0, minPos: 0, maxPos: 0, width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
   const [showMarkers, setShowMarkers] = useState(false);
+  const [upscaleEnabled, setUpscaleEnabled] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCapture = useCallback(() => {
@@ -50,6 +51,12 @@ function App() {
     },
     [camera.setPolarity]
   );
+
+  const handleUpscaleToggle = useCallback(() => {
+    const next = !upscaleEnabled;
+    setUpscaleEnabled(next);
+    camera.setUpscale(next);
+  }, [upscaleEnabled, camera.setUpscale]);
 
   const handleIsothermChange = useCallback(
     (tempC: number | null) => {
@@ -92,6 +99,8 @@ function App() {
         onCapture={handleCapture}
         showMarkers={showMarkers}
         onToggleMarkers={() => setShowMarkers((v) => !v)}
+        upscaleEnabled={upscaleEnabled}
+        onToggleUpscale={handleUpscaleToggle}
         streaming={isStreaming}
       />
       <main className="video-area">
@@ -144,7 +153,7 @@ function App() {
               <div className="status-dot live" />
               <span>LIVE</span>
             </div>
-            <span>{DEFAULT_WIDTH}x{DEFAULT_HEIGHT}</span>
+            <span>{frameStats.width}x{frameStats.height}</span>
           </div>
         )}
       </main>

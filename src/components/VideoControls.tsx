@@ -9,6 +9,8 @@ interface VideoControlsProps {
   onCapture: () => void;
   showMarkers: boolean;
   onToggleMarkers: () => void;
+  upscaleEnabled: boolean;
+  onToggleUpscale: () => void;
   currentPalette: Palette;
   streaming: boolean;
 }
@@ -21,6 +23,8 @@ export function VideoControls({
   onCapture,
   showMarkers,
   onToggleMarkers,
+  upscaleEnabled,
+  onToggleUpscale,
   currentPalette,
   streaming,
 }: VideoControlsProps) {
@@ -69,6 +73,14 @@ export function VideoControls({
             onChange={onToggleMarkers}
           />
           Min/Max markers
+        </label>
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={upscaleEnabled}
+            onChange={onToggleUpscale}
+          />
+          SR Upscale (3x)
         </label>
         <button onClick={onFfc} className="ffc-button">
           Run FFC

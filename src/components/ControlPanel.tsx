@@ -12,6 +12,8 @@ interface ControlPanelProps {
   onCapture: () => void;
   showMarkers: boolean;
   onToggleMarkers: () => void;
+  upscaleEnabled: boolean;
+  onToggleUpscale: () => void;
   streaming: boolean;
 }
 
@@ -25,6 +27,8 @@ export function ControlPanel({
   onCapture,
   showMarkers,
   onToggleMarkers,
+  upscaleEnabled,
+  onToggleUpscale,
   streaming,
 }: ControlPanelProps) {
   return (
@@ -43,6 +47,8 @@ export function ControlPanel({
         onCapture={onCapture}
         showMarkers={showMarkers}
         onToggleMarkers={onToggleMarkers}
+        upscaleEnabled={upscaleEnabled}
+        onToggleUpscale={onToggleUpscale}
         streaming={streaming}
       />
     </aside>

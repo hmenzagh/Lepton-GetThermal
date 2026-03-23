@@ -103,3 +103,13 @@ pub fn set_isotherm(state: State<'_, AppState>, raw_threshold: u16) -> Result<()
     cam.set_isotherm_raw(raw_threshold);
     Ok(())
 }
+
+#[tauri::command]
+pub fn set_upscale(state: State<'_, AppState>, enabled: bool) -> Result<(), String> {
+    eprintln!("[thermal-v2] set_upscale called: enabled={enabled}");
+    let cam_guard = state.camera.lock();
+    let cam = cam_guard.as_ref().ok_or("Camera not connected")?;
+    cam.set_upscale(enabled);
+    eprintln!("[thermal-v2] set_upscale done");
+    Ok(())
+}
