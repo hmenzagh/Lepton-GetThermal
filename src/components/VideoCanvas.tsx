@@ -44,6 +44,7 @@ export function VideoCanvas({ streaming, onStats, onCanvasClick, className }: Vi
         objectFit: "contain",
         background: "#000",
         cursor: onCanvasClick ? "crosshair" : "default",
+        pointerEvents: streaming ? "auto" : "none",
       }}
     />
   );

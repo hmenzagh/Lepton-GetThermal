@@ -48,14 +48,19 @@ int thermal_usb_open_device(io_service_t service, IOUSBDeviceInterface ***dev_ou
     IOObjectRelease(service);
     if (kr != KERN_SUCCESS || !plugIn) return -4;
 
-    IOUSBDeviceInterface **dev = NULL;
+    /* Need at least ID320 for USBDeviceOpenSeize support */
+    IOUSBDeviceInterface320 **dev = NULL;
     HRESULT hr = (*plugIn)->QueryInterface(plugIn,
-        CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID), (LPVOID *)&dev);
+        CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID320), (LPVOID *)&dev);
     (*plugIn)->Release(plugIn);
     if (hr != 0 || !dev) return -5;
 
-    kr = (*dev)->USBDeviceOpen(dev);
+    /* Use USBDeviceOpenSeize to detach the kernel UVC driver
+       (AppleUSBVideoSupport) which claims the VideoStreaming interface.
+       Plain USBDeviceOpen would fail with kIOReturnExclusiveAccess. */
+    kr = (*dev)->USBDeviceOpenSeize(dev);
     if (kr != KERN_SUCCESS) {
+        fprintf(stderr, "[usb_helper] USBDeviceOpenSeize failed: 0x%08X\n", kr);
         (*dev)->Release(dev);
         return -6;
     }
@@ -65,6 +70,9 @@ int thermal_usb_open_device(io_service_t service, IOUSBDeviceInterface ***dev_ou
 }
 
 int thermal_usb_set_configuration(IOUSBDeviceInterface **dev, uint8_t config) {
+    /* First set config 0 to force the kernel to release all interface
+       claims (AppleUSBVideoSupport), then set the desired config. */
+    (*dev)->SetConfiguration(dev, 0);
     return (*dev)->SetConfiguration(dev, config);
 }
 
@@ -102,10 +110,10 @@ int thermal_usb_find_interface(IOUSBDeviceInterface **dev,
     IOObjectRelease(intf_service);
     if (kr != KERN_SUCCESS || !plugIn) return -3;
 
-    /* Must use ID190 or later to get ReadIsochPipeAsync support */
-    IOUSBInterfaceInterface190 **intf = NULL;
+    /* Need ID550 for USBInterfaceOpenSeize (also includes ReadIsochPipeAsync) */
+    IOUSBInterfaceInterface550 **intf = NULL;
     HRESULT hr = (*plugIn)->QueryInterface(plugIn,
-        CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID190), (LPVOID *)&intf);
+        CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID550), (LPVOID *)&intf);
     (*plugIn)->Release(plugIn);
     if (hr != 0 || !intf) return -4;
 
@@ -114,7 +122,13 @@ int thermal_usb_find_interface(IOUSBDeviceInterface **dev,
 }
 
 int thermal_usb_open_interface(IOUSBInterfaceInterface **intf) {
-    return (*intf)->USBInterfaceOpen(intf);
+    /* Use USBInterfaceOpenSeize to detach kernel UVC driver from this interface */
+    IOUSBInterfaceInterface550 **intf550 = (IOUSBInterfaceInterface550 **)intf;
+    kern_return_t kr = (*intf550)->USBInterfaceOpenSeize(intf550);
+    if (kr != KERN_SUCCESS) {
+        fprintf(stderr, "[usb_helper] USBInterfaceOpenSeize failed: 0x%08X\n", kr);
+    }
+    return kr;
 }
 
 void thermal_usb_close_interface(IOUSBInterfaceInterface **intf) {
