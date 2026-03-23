@@ -172,9 +172,14 @@ impl LeptonController {
         self.set_attribute(command_id, &[value])
     }
 
-    /// Convenience: execute a run command (write zero-length payload).
+    /// Execute a run command by sending the control_id as a single byte,
+    /// matching the PureThermal firmware protocol.
     pub fn run_command(&self, command_id: u16) -> Result<(), CameraError> {
-        self.set_attribute(command_id, &[0])
+        let _guard = self.lock.lock();
+        let unit_id = command_to_unit_id(command_id)?;
+        let control_id = command_to_control_id(command_id);
+        self.usb.set_ctrl(unit_id, control_id, &[control_id])?;
+        Ok(())
     }
 
     // ------------------------------------------------------------------
