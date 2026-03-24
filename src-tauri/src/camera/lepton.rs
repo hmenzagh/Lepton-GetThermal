@@ -56,6 +56,7 @@ pub const LEP_AGC_LINEAR_DAMPENING_FACTOR: u16 = 0x015C;
 // SYS Module (0x0200)
 // ---------------------------------------------------------------------------
 pub const LEP_SYS_FLIR_SERIAL_NUMBER: u16 = 0x0208;
+pub const LEP_SYS_FFC_SHUTTER_MODE: u16 = 0x023C;
 pub const LEP_SYS_FFC_RUN: u16 = 0x0242; // Run command
 pub const LEP_SYS_GAIN_MODE: u16 = 0x0248;
 
@@ -209,6 +210,16 @@ impl LeptonController {
     // ------------------------------------------------------------------
     // SYS Module
     // ------------------------------------------------------------------
+
+    /// Get FFC shutter mode (0 = manual, 1 = auto).
+    pub fn get_ffc_mode(&self) -> Result<u16, CameraError> {
+        self.get_u16(LEP_SYS_FFC_SHUTTER_MODE)
+    }
+
+    /// Set FFC shutter mode (0 = manual, 1 = auto).
+    pub fn set_ffc_mode(&self, mode: u16) -> Result<(), CameraError> {
+        self.set_u16(LEP_SYS_FFC_SHUTTER_MODE, mode)
+    }
 
     /// Trigger a flat-field correction (FFC / shutter recalibration).
     pub fn perform_ffc(&self) -> Result<(), CameraError> {

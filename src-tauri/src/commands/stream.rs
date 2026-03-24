@@ -37,6 +37,13 @@ pub fn connect_camera(state: State<'_, AppState>) -> Result<String, String> {
     let lepton = Arc::new(LeptonController::new(stream));
     // Force AGC off to preserve raw radiometric Y16 values
     let _ = lepton.set_agc_enable(false);
+    // Disable auto-FFC to prevent random shutter clicks during streaming
+    match lepton.get_ffc_mode() {
+        Ok(mode) => eprintln!("[lepton-getthermal] FFC shutter mode: {} ({})",
+            mode, if mode == 0 { "manual" } else { "auto" }),
+        Err(e) => eprintln!("[lepton-getthermal] Failed to read FFC mode: {e}"),
+    }
+    let _ = lepton.set_ffc_mode(0); // 0 = manual
     let part = lepton.get_part_number().unwrap_or_default();
     eprintln!("[lepton-getthermal] Lepton controller ready, part: {part}");
 
