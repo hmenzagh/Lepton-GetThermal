@@ -1,6 +1,6 @@
 [package]
 name = "lepton-getthermal"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lepton-GetThermal — FLIR Lepton Thermal Camera Viewer"
 authors = ["hmenzagh"]
 edition = "2021"

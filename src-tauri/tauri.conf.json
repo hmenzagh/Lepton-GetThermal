@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri-schema/main/tauri.conf.schema.json",
   "productName": "Lepton-GetThermal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.lepton-getthermal.dev",
   "build": {
     "beforeDevCommand": "npm run dev",
