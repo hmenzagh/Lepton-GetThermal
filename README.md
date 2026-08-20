@@ -125,4 +125,4 @@ src-tauri/                  # Rust backend
 
 ## License
 
-All rights reserved.
+[MIT](LICENSE) © 2026 Hugo Menzaghi
